@@ -1,4 +1,10 @@
+import { ref } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
+
+// 화면 전환 방향 힌트 — "앞으로/뒤로" 만 알려주는 아주 작은 모션(12px·~180ms).
+// 직전 경로로 돌아가면 back, 그 외에는 forward. reduced-motion 이면 style.css 에서 정지.
+export const navDir = ref<'forward' | 'back'>('forward')
+const pathStack: string[] = []
 
 // 씨앗 — 2026 트렌드 실험 플로우 (Figma "2026 트렌드 실험 · 진단" 기준)
 //  온보딩 → 로그인/회원가입 → 진단 정보 입력(N1~N4/n2b) → 진단 생성 → 로드맵(진단결과)
@@ -49,4 +55,15 @@ export const router = createRouter({
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
+})
+
+// 컴포넌트 스왑(=트랜지션 시작) 전에 방향을 확정해 <Transition :name> 이 최신값을 읽게 한다.
+router.beforeEach((to) => {
+  if (pathStack.length >= 2 && pathStack[pathStack.length - 2] === to.path) {
+    navDir.value = 'back'
+    pathStack.pop()
+  } else {
+    navDir.value = 'forward'
+    if (pathStack[pathStack.length - 1] !== to.path) pathStack.push(to.path)
+  }
 })
