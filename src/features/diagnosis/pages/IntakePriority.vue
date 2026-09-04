@@ -50,7 +50,7 @@ function move(i: number, dir: -1 | 1) {
       <p class="mt-1 text-body-sm text-muted">위에 있을수록 먼저 계획하고 예산을 더 많이 배분해요</p>
     </div>
 
-    <ol class="flex flex-col gap-2">
+    <TransitionGroup tag="ol" name="reorder" class="relative flex flex-col gap-2">
       <li
         v-for="(r, i) in rows"
         :key="r.key"
@@ -81,10 +81,45 @@ function move(i: number, dir: -1 | 1) {
           </button>
         </span>
       </li>
-    </ol>
+    </TransitionGroup>
 
     <p class="text-body-sm text-muted">
       1순위 목표부터 로드맵 앞쪽에 배치하고, 예산도 더 많이 배분해요.
     </p>
   </WizardChrome>
 </template>
+
+<style scoped>
+/* ↑↓ 재정렬 시 항목이 스르륵 자리 이동 — "무엇이 바뀌었는지" 이해를 돕는 기능적 모션.
+   WCAG 2.2(드래그 전용 금지) 준수 + 위치 변화 명시. */
+.reorder-move {
+  transition: transform 0.22s var(--ease-out-soft);
+}
+.reorder-enter-active,
+.reorder-leave-active {
+  transition:
+    opacity 0.18s var(--ease-out-soft),
+    transform 0.18s var(--ease-out-soft);
+}
+.reorder-enter-from,
+.reorder-leave-to {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.reorder-leave-active {
+  position: absolute;
+  width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reorder-move,
+  .reorder-enter-active,
+  .reorder-leave-active {
+    transition: none;
+  }
+  .reorder-enter-from,
+  .reorder-leave-to {
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
