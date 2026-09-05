@@ -13,7 +13,7 @@ const risky = shortBy > 0
 const zones = [
   { upTo: 0.22, color: '#e7b15a' },
   { upTo: 0.42, color: '#f0d08c' },
-  { upTo: 1, color: 'var(--color-primary)' },
+  { upTo: 1, color: 'var(--color-primary-bright)' },
 ]
 </script>
 

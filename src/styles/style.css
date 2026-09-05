@@ -16,29 +16,30 @@
   --color-border: #e5e7eb;
   --color-border-strong: #c9cdd2;
 
-  /* --- Color: brand (Figma Seed/Colors) --- */
-  --color-primary: #2fa360; /* primary/default — 버튼·활성 */
-  --color-primary-dark: #1f7a45; /* primary/dark — hover/active, 틴트 위 텍스트 */
-  --color-primary-tint: #e8f5ec; /* primary/tint */
+  /* --- Color: brand (DESIGN.md §2 Color — SSOT) --- */
+  --color-primary: #1f7a45; /* primary/default — 버튼·링크·선택 텍스트·활성 내비 (흰 텍스트 AA 4.8:1) */
+  --color-primary-dark: #175c34; /* hover/active/pressed (흰 텍스트 ≈ 7:1) */
+  --color-primary-tint: #e8f5ec; /* 선택 옵션·칩·성공 배지·차분한 카드 배경 */
+  --color-primary-bright: #2fa360; /* 장식 전용 — 진행바 채움·차트·아이콘. 텍스트를 얹지 않는다(흰 텍스트 3.2:1, AA 미달) */
   --color-on-primary: #ffffff;
   --color-focus: #1f7a45;
   --color-text-muted: #9ca3af; /* text/muted — 아주 옅은 보조 */
 
-  /* --- Color: status (Figma) --- */
-  --color-danger: #b94a3d;
-  --color-danger-tint: #fbeae8;
-  --color-amber: #b7791f;
-  --color-amber-tint: #fdf3e0;
+  /* --- Color: status (DESIGN.md §2 Color) --- */
+  --color-danger: #c0392b;
+  --color-danger-tint: #fdeceb;
+  --color-amber: #8a6420;
+  --color-amber-tint: #f7edda;
 
-  /* --- Color: 목표 카테고리 (주거·생활·취창업·금융 / Figma accents) --- */
-  --color-cat-housing: #2fa360;
+  /* --- Color: 목표 카테고리 (주거·생활·취창업·금융 / DESIGN.md §2 카테고리 색) --- */
+  --color-cat-housing: #1f7a45;
   --color-cat-housing-tint: #e8f5ec;
-  --color-cat-living: #3576c9;
-  --color-cat-living-tint: #e6eef9;
-  --color-cat-work: #c96b4a;
-  --color-cat-work-tint: #f8e9e3;
-  --color-cat-finance: #7a5fc9;
-  --color-cat-finance-tint: #ece7f8;
+  --color-cat-living: #3b6291;
+  --color-cat-living-tint: #e6edf5;
+  --color-cat-work: #b45b41;
+  --color-cat-work-tint: #f7e6df;
+  --color-cat-finance: #5e4f97;
+  --color-cat-finance-tint: #ece8f5;
 
   /* --- Typography --- */
   --font-sans:

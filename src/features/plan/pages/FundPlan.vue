@@ -74,7 +74,7 @@ const checks = [
         <h2 class="text-label text-ink">자산관리 원칙 점검</h2>
         <ul class="mt-2.5 space-y-2.5">
           <li v-for="c in checks" :key="c.t" class="flex items-center gap-2 text-body-sm">
-            <CircleCheck v-if="c.ok" :size="17" class="shrink-0 text-primary" aria-hidden="true" />
+            <CircleCheck v-if="c.ok" :size="17" class="shrink-0 text-primary-bright" aria-hidden="true" />
             <CircleAlert v-else :size="17" class="shrink-0 text-amber" aria-hidden="true" />
             <span :class="c.ok ? 'text-ink' : 'text-amber'">{{ c.t }}</span>
           </li>

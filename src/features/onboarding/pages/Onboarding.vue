@@ -10,7 +10,7 @@ const router = useRouter()
   <div class="flex min-h-svh flex-col bg-transparent px-6 pb-7 pt-5">
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-1.5" aria-hidden="true">
-        <span class="h-1.5 w-6 rounded-full bg-primary" />
+        <span class="h-1.5 w-6 rounded-full bg-primary-bright" />
         <span class="h-1.5 w-1.5 rounded-full bg-border" />
         <span class="h-1.5 w-1.5 rounded-full bg-border" />
       </div>

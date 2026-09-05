@@ -48,7 +48,7 @@ const dotColor = computed(() => {
   return props.category ? m[props.category] : 'bg-border-strong'
 })
 const barColor = computed(() =>
-  props.status === 'risk' ? 'var(--color-danger)' : 'var(--color-primary)',
+  props.status === 'risk' ? 'var(--color-danger)' : 'var(--color-primary-bright)',
 )
 </script>
 

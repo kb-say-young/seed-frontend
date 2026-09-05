@@ -8,7 +8,7 @@ withDefaults(
     height?: number
     ariaLabel?: string
   }>(),
-  { color: 'var(--color-primary)', height: 8 },
+  { color: 'var(--color-primary-bright)', height: 8 },
 )
 </script>
 

@@ -35,7 +35,7 @@ const emit = defineEmits<{ next: [] }>()
         <p class="sr-only">전체 {{ props.total }}단계 중 {{ props.step }}단계</p>
         <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-primary-tint" aria-hidden="true">
           <div
-            class="h-full rounded-full bg-primary transition-all"
+            class="h-full rounded-full bg-primary-bright transition-all"
             :style="{ width: `${Math.round((props.step / props.total) * 100)}%` }"
           />
         </div>

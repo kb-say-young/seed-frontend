@@ -20,7 +20,7 @@ const props = withDefaults(
 
 const pct = computed(() => (props.value / (props.max || 1)) * 100)
 const fillPct = computed(() => clamp(pct.value, 0, 100))
-const toneColor = { primary: 'var(--color-primary)', amber: 'var(--color-amber)', danger: 'var(--color-danger)' }
+const toneColor = { primary: 'var(--color-primary-bright)', amber: 'var(--color-amber)', danger: 'var(--color-danger)' }
 const fillColor = computed(() => props.color ?? toneColor[props.tone])
 const label = computed(
   () => props.ariaLabel ?? `${Math.round(pct.value)}퍼센트`,

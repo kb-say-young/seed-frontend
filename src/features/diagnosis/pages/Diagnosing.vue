@@ -24,8 +24,8 @@ const steps = [
       fill="none"
       aria-hidden="true"
     >
-      <circle cx="36" cy="36" r="29" stroke="var(--color-primary)" stroke-width="3" />
-      <path d="M36 36 L36 7 A29 29 0 0 1 61.1 50.5 Z" fill="var(--color-primary)" />
+      <circle cx="36" cy="36" r="29" stroke="var(--color-primary-bright)" stroke-width="3" />
+      <path d="M36 36 L36 7 A29 29 0 0 1 61.1 50.5 Z" fill="var(--color-primary-bright)" />
     </svg>
 
     <h1 id="main" class="mt-5 text-h3 text-ink">로드맵을 그리고 있어요</h1>
@@ -37,7 +37,7 @@ const steps = [
       <li v-for="s in steps" :key="s.t" class="flex items-center gap-2.5">
         <span
           class="size-4 rounded-full"
-          :class="s.done ? 'bg-primary' : 'bg-border'"
+          :class="s.done ? 'bg-primary-bright' : 'bg-border'"
           aria-hidden="true"
         />
         <span class="text-body-sm" :class="s.done ? 'text-ink' : 'text-text-muted'">{{ s.t }}</span>

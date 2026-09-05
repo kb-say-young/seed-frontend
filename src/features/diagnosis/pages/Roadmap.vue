@@ -66,7 +66,7 @@ const buckets = computed(() =>
         <h2 class="text-label text-ink">타임라인</h2>
         <div v-for="g in buckets" :key="g.name" class="mt-4">
           <p class="flex items-center gap-2 text-body-sm font-semibold text-ink">
-            <span class="size-2.5 rounded-full bg-primary" aria-hidden="true" />{{ g.name }}
+            <span class="size-2.5 rounded-full bg-primary-bright" aria-hidden="true" />{{ g.name }}
           </p>
           <div class="mt-3 space-y-3">
             <MilestoneCard
