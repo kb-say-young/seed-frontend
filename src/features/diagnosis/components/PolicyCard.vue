@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { ChevronRight } from 'lucide-vue-next'
 
-// Figma PolicyItem — 제목 / 기관 / 요약 + 매칭 상태 배지 + (선택)사유
+// Figma PolicyItem — 제목 / 기관 / 요약 + 매칭 상태 배지 + (선택)사유. `to` 주면 상세로 링크.
 type Status = 'eligible' | 'review' | 'ineligible'
 const props = defineProps<{
   title: string
@@ -10,6 +10,7 @@ const props = defineProps<{
   summary: string
   status?: Status
   reason?: string
+  to?: string
 }>()
 
 const badge = computed(() => {
@@ -24,7 +25,11 @@ const badge = computed(() => {
 </script>
 
 <template>
-  <article class="glass rounded-2xl p-4">
+  <component
+    :is="props.to ? 'RouterLink' : 'article'"
+    :to="props.to"
+    class="block glass rounded-2xl p-4 no-underline"
+  >
     <div class="flex items-center gap-2">
       <span
         v-if="badge"
@@ -32,7 +37,12 @@ const badge = computed(() => {
         :class="badge.cls"
         >{{ badge.text }}</span
       >
-      <ChevronRight :size="16" class="ml-auto shrink-0 text-muted" aria-hidden="true" />
+      <ChevronRight
+        v-if="props.to"
+        :size="16"
+        class="ml-auto shrink-0 text-muted"
+        aria-hidden="true"
+      />
     </div>
     <h3 class="mt-1.5 text-label font-bold text-ink">{{ props.title }}</h3>
     <p class="mt-0.5 text-caption text-muted">{{ props.provider }}</p>
@@ -40,5 +50,5 @@ const badge = computed(() => {
     <p v-if="props.reason" class="mt-2 text-caption leading-snug text-muted">
       {{ props.reason }}
     </p>
-  </article>
+  </component>
 </template>

@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { CircleCheck, CircleAlert } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { CircleCheck, CircleAlert, Plus } from 'lucide-vue-next'
 import AppHeader from '@/shared/components/AppHeader.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import ViewToggle from '@/shared/ui/ViewToggle.vue'
+import SavingsRecordSheet from '@/features/plan/components/SavingsRecordSheet.vue'
 import { won, manwon } from '@/shared/lib/money'
 import { StackedBar } from '@/shared/ui/charts'
+
+const sheetOpen = ref(false)
 
 // Figma "자금 계획 · 목적별 배분". AI 추천(/fund/ai)과 토글로 전환.
 const total = 12_532_000
@@ -81,10 +85,17 @@ const checks = [
         </ul>
       </section>
 
-      <UiButton size="lg" block class="mt-1" @click="$router.push('/fund/allocation')">
-        배분 비율 조정하기
-      </UiButton>
+      <div class="space-y-2.5 pt-1">
+        <UiButton size="lg" block @click="$router.push('/fund/allocation')">
+          배분 비율 조정하기
+        </UiButton>
+        <UiButton variant="secondary" block @click="sheetOpen = true">
+          <Plus :size="18" aria-hidden="true" /> 적립 내역 작성
+        </UiButton>
+      </div>
     </main>
+
+    <SavingsRecordSheet :open="sheetOpen" @close="sheetOpen = false" />
     <FloatingNav />
   </div>
 </template>
