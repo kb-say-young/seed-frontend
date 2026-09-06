@@ -20,7 +20,7 @@
 ### ① `DESIGN.md` (레포 루트) — 시각 언어의 단일 기준(SSOT)
 - 색·타이포·간격·컴포넌트 스펙의 **유일한 출처**.
 - 코드에 하드코딩된 값보다 DESIGN.md가 우선. 새 화면은 DESIGN.md 토큰만 사용.
-- 기계 판독본 = `src/style.css` 의 `@theme` 블록. **DESIGN.md와 style.css는 항상 함께 수정.**
+- 기계 판독본 = `src/styles/style.css` 의 `@theme` 블록. **DESIGN.md와 style.css는 항상 함께 수정.**
 
 ### ② `.claude/skills/ui-ux-pro-max` · `ui-styling` · `design-system` · `brand` — 생성·검색 엔진
 - **언제:** 새 페이지/시스템 방향을 잡을 때, 특정 UX·색·타이포·차트 문제를 풀 때, UI 리뷰할 때.
@@ -75,9 +75,36 @@ VISUAL_DENSITY: 3      화면당 주요 행동 1개. 점진적 공개. 대시보
 ## 4. 스택 & 토큰
 
 - Vite + Vue 3 (`<script setup lang="ts">`) + TypeScript + **Tailwind CSS v4** (CSS-first `@theme`, `@tailwindcss/vite` 플러그인).
-- 디자인 토큰 = `src/style.css` 의 `@theme` 블록. Tailwind 유틸리티(`bg-primary`, `text-muted`, `rounded-lg` 등)가 여기서 생성된다.
+- 디자인 토큰 = `src/styles/style.css` 의 `@theme` 블록. Tailwind 유틸리티(`bg-primary`, `text-muted`, `rounded-lg` 등)가 여기서 생성된다.
 - 원시 hex를 컴포넌트에 쓰지 않는다. 토큰이 없으면 DESIGN.md에 먼저 추가하고 `@theme` 에 반영.
 - 아이콘: `lucide-vue-next`. 폰트: Pretendard(현재 CDN `@import`, 배포 시 self-host 권장).
+
+---
+
+## 4a. 디렉터리 구조 (기능 기준 / feature-based)
+
+```
+src/
+  app/        부트스트랩만 — main.ts, App.vue
+  styles/     style.css (@theme·glass 토큰)
+  router/     index.ts — 각 feature pages/ 를 lazy import (배럴 경유 금지 = 코드분할 유지)
+  shared/
+    ui/         디자인시스템 원자 (UiButton·UiField·UiChip·OptionRow·ViewToggle·StatCard) + index.ts 배럴
+    components/  여러 feature 공유 셸·위젯 (AppHeader·FloatingNav·WizardChrome·SustainMeter·MilestoneCard·AlertCard)
+    lib/         money.ts · roadmap.ts (도메인 대표 데이터, 후속 API 대체 예정)
+  features/
+    onboarding/  auth/  diagnosis/  plan/  tracking/  account/  home/
+      각 feature: pages/ (화면) · components/ (그 feature 전용) · model/ (store·타입) · api/ (후속)
+```
+
+- 경로 별칭 **`@/` = `src/`** (`vite.config.ts` resolve.alias + `tsconfig.app.json` paths). 상대경로 `../../` 금지.
+- **import 방향 규칙:**
+  - `features/*` 끼리 직접 import 금지 → 공유가 필요하면 `shared/` 로 승격.
+  - `shared/*` 는 `features/*` 를 절대 import 하지 않는다.
+  - "2개 이상 feature 가 쓰면 `shared/`, 아니면 그 feature 안." 처음엔 feature 안에 두고 두 번째 사용처가 생길 때 승격.
+- 새 화면 = 해당 feature 의 `pages/` 에 파일 추가 + `src/router/index.ts` 에 lazy 라우트 1줄.
+- 컴포넌트 `PascalCase.vue` / 폴더 `kebab` / 컴포저블 `useXxx.ts` / 스토어 `xxx.store.ts` 또는 `model/`.
+- 진단 위저드 답 상태: `src/features/diagnosis/model/store.ts` (`reactive` 싱글턴, Pinia 도입 전).
 
 ---
 

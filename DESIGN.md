@@ -25,7 +25,7 @@ dials:
 
 > 이 파일이 시각 언어의 **단일 기준(Single Source of Truth)** 이다.
 > 코드에 박힌 색/간격 값보다 이 문서가 우선한다. 새 화면은 여기 정의된 토큰만 쓴다.
-> 기계 판독본은 `src/style.css` 의 `@theme` 블록이며, 이 문서와 항상 함께 수정한다.
+> 기계 판독본은 `src/styles/style.css` 의 `@theme` 블록이며, 이 문서와 항상 함께 수정한다.
 
 ---
 
@@ -52,7 +52,7 @@ dials:
 ## 2. Color Palette & Roles
 
 출처: **씨앗 Seed 와이어프레임 · 진단 플로우** (Figma, file `dA4Z11FxLbcKG11iyDm7Os`).
-값은 와이어프레임에서 확정. 이 표와 `src/style.css` `@theme` 는 항상 함께 갱신한다. 모든 조합의 대비는 의도적으로 검증했다.
+값은 와이어프레임에서 확정. 이 표와 `src/styles/style.css` `@theme` 는 항상 함께 갱신한다. 모든 조합의 대비는 의도적으로 검증했다.
 
 ### Core
 
@@ -425,10 +425,93 @@ taste 스킬 Section 14 (FINAL PRE-FLIGHT CHECK) + `.claude/CLAUDE.md` 하드 �
 
 ### 상태 관리
 
-`src/lib/intake.ts` — `reactive` 싱글턴(Pinia 도입 전). 회원가입·진단 위저드 답을 담고
+`src/features/diagnosis/model/store.ts` — `reactive` 싱글턴(Pinia 도입 전). 회원가입·진단 위저드 답을 담고
 서버 전송 전까지 메모리 보관. 하드 리로드 시 초기화(SPA 내 이동은 유지).
 
 ### 미구현(후속)
 
 정책 상세(SCR-DGN-10), 진단 이력(SCR-DGN-11), 중복수급 모달(SCR-DGN-09),
 카테고리 상세(비상금 등)·월별 요약, 알림 목록, 마이페이지, 실제 API 연동, vue-router 가드/인증.
+
+---
+
+## 부록 A. Glassmorphism 스킨 (씨앗 · 화이트 + 연두)
+
+> Figma `제안 · Glassmorphism` (file `dA4Z11FxLbcKG11iyDm7Os`, page `578:412`) 기준.
+> "거의 평면" 기본 시각 언어 위에 얹는 **표면 처리 스킨**이다. 색·타이포·간격·모션 규칙은
+> 위 본문 그대로 유지되고, 카드/헤더/탭바/입력의 표면만 프로스티드 유리로 바뀐다.
+
+### A.1 왜 이 스킨이 §0(취약계층 우선)과 충돌하지 않는가
+
+전통적 글래스모피즘의 약점은 **저대비**와 **저사양 기기 성능**이다. 이 스킨은:
+
+- 배경 연두는 "있는듯 없는듯"으로만 둔다(`.app-glow`, radial-gradient 4개, 알파 0.10–0.14). 카드는 사실상 흰색 위 대비 환경.
+- 본문 텍스트는 항상 **불투명 잉크색**(`--color-ink` / `--color-body`, 대비 4.5:1↑). 유리 위 텍스트에
+  반투명색을 쓰지 않는다.
+- 카드는 유리 **테두리(흰 1px)와 연두빛 소프트 섀도우**로 정의한다. 채움 투명도에 기대지 않는다.
+- 경고 상태는 **앰버**(`.glass-amber` / `text-amber`), 빨강은 오류·삭제·로그아웃에만(§본문 규칙 유지).
+- `backdrop-filter` 미지원 브라우저는 `@supports` 로 **거의 불투명 흰색**으로 폴백(대비 보존).
+
+### A.2 토큰 (`src/styles/style.css` `:root`)
+
+| 토큰 | 값 | 용도 |
+|---|---|---|
+| `--glass-bg` | `rgb(255 255 255 / 0.62)` | 기본 유리 카드 |
+| `--glass-bg-strong` | `rgb(255 255 255 / 0.8)` | 헤더·탭바·하단 CTA 바(가독성 우선) |
+| `--glass-field-bg` | `rgb(255 255 255 / 0.55)` | 입력·칩·토글 |
+| `--glass-tint-bg` | `color-mix(#2fa360 12% + 흰 72%)` | 연두 강조 카드(새 지원 매칭 등) |
+| `--glass-amber-bg` | `color-mix(#b7791f 13% + 흰 72%)` | 주의 카드(위험 경고) |
+| `--glass-border` | `rgb(255 255 255 / 0.85)` | 유리 테두리(흰 1px) |
+| `--glass-blur` | `16px` | 기본 backdrop blur (strong = 22px, field = 10px) |
+| `--shadow-glass` / `--shadow-glass-lg` | 연두빛 y10/y16 소프트 섀도우 | `shadow-glass` 유틸 |
+
+### A.3 유틸리티 (`@utility`)
+
+| 클래스 | 표면 |
+|---|---|
+| `glass` | 기본 프로스티드 카드 (bg 0.62 + blur 16 + 흰 테두리 + 연두 섀도우) |
+| `glass-strong` | 더 불투명·더 강한 blur. 헤더·`FloatingNav`·위저드 하단 바 |
+| `glass-tint` | 연두 강조 카드 |
+| `glass-amber` | 주의 카드 (빨강 아님) |
+| `glass-field` | 입력·칩·세그먼트 토글의 얇은 유리 |
+
+`@supports not (backdrop-filter)` → 위 클래스들 배경을 `rgb(255 255 255 / 0.96)`(틴트는 `color-mix … + 흰색`)로 폴백.
+
+### A.4 컴포넌트 매핑
+
+- `AppHeader` · `FloatingNav` · `WizardChrome` 하단 바 · 페이지 sticky 푸터·헤더 → `glass-strong`
+- `SustainMeter` · `MilestoneCard` · `PolicyCard` · `StatCard`(default) · 페이지 카드 → `glass`
+- `StatCard`(primary) · 홈 "새 지원 매칭" · `MilestoneDetail` "왜 먼저" · 온보딩 일러스트 패널 → `glass-tint`
+- `AlertCard`(tone="amber") · 자금계획 원칙 미충족 → `glass-amber`
+- `UiField` input · `UiChip`(비선택) · `OptionRow`(비선택) · `ViewToggle` 트랙 · `ExpenseAdd` 세그먼트 → `glass-field`
+- `UiButton` primary = 여전히 **불투명 그린 pill** + `shadow-glass` (대비·명확성 최우선). secondary = `glass-field` + 그린 테두리
+- 앱 배경 = 흰색 + `.app-glow`(App.vue 고정 레이어, 알파 0.10–0.14 아주 옅게). 페이지 래퍼의 `bg-surface-subtle` → `bg-white` / `bg-transparent`. 유리는 배경 굴절이 아니라 테두리·섀도우로만 읽힘.
+- `SustainMeter` 부족분 숫자·게이지 = 빨강 → **앰버**(오류 아님)
+
+---
+
+## 부록 B. 차트 키트 (`src/shared/ui/charts/`) — Bklit UI 시각 언어 이식
+
+> [Bklit UI](https://bklit.com) (React·shadcn·visx 기반)를 **직접 쓰지 않고** 그 시각 언어만
+> Vue + 디자인 토큰으로 재현. 의존성 0 (SVG·CSS만). `.claude/CLAUDE.md` §6 "shadcn 설치 금지",
+> §0 "저불안·접근성 우선"을 지키기 위한 선택 — Bklit의 shimmer/sweep/멀티페이즈 로딩 연출은 채택하지 않음.
+
+### 공통 규칙
+- **라운드 캡** (막대·링 끝 둥글게), **gridless** (옅은 베이스라인만), **세로 그라디언트 채움** (색 → 14% 알파).
+- 시리즈 색 = 목표 카테고리 토큰 재사용 (`--chart-c1..c5` = `--color-cat-*` + `--color-amber`).
+- 트랙 = `--chart-track`. 그리드 = `--chart-grid`.
+- 진입 모션: `--chart-enter-dur` (기본 420ms, `prefers-reduced-motion` → **0ms**), ease `cubic-bezier(.22,1,.36,1)`.
+- 접근성: 각 차트 `role="img"` + 의미 있는 한국어 `aria-label`(숫자에 항상 의미). 색만으로 정보 전달 안 함.
+
+### 컴포넌트
+| 컴포넌트 | 용도 | 적용처 |
+|---|---|---|
+| `BarChart` | 세로 막대 + 막대별 `plan` 틱(계획선) | 예산 대비(카테고리별 실제 vs 추천) |
+| `StackedBar` | 1줄 누적 막대 (2px 세그먼트 간격) | 자금계획 목적별 배분 · AI 추천 배분 |
+| `RingChart` | 도넛 (라운드 캡 세그먼트 + 트랙 + 중앙 슬롯 + 옅은 글로우) | AI 추천 배분 비율 |
+| `ProgressMeter` | 선형 진행/예산 대비 (tone: primary·amber·danger, `over` 초과 표시) | 이번 달 지출 · 카테고리 예산 · 마일스톤 진척 |
+| `ZoneMeter` | 구간별 색 게이지 + 현재 위치 마커 | `SustainMeter` (자립 지속 가능 N개월) |
+| `SegmentBar` | N칸 이산 트래커 | 로드맵 진척 (2/9) |
+| `ChartLegend` | 점 + 라벨 (+ 값) | 링·누적바 범례 |
+
+배럴: `import { RingChart, StackedBar } from '@/shared/ui/charts'`

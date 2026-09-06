@@ -16,36 +16,53 @@ npm run dev      # http://localhost:5173
 npm run build    # 타입 체크 + 프로덕션 빌드
 ```
 
-## 화면 (`src/router.ts`)
+## 디렉터리 구조 (기능 기준 / feature-based)
+
+경로 별칭 **`@/` = `src/`**. `features/*` 끼리 직접 import 금지 — 공유는 `shared/` 로 승격.
+자세한 규칙은 [`.claude/CLAUDE.md`](./.claude/CLAUDE.md) §4a.
+
+```
+src/
+  app/         부트스트랩 — main.ts, App.vue
+  styles/      style.css (@theme·glass 토큰)
+  router/      index.ts — 각 feature pages/ 를 lazy import
+  shared/
+    ui/          UiButton · UiField · UiChip · OptionRow · ViewToggle · StatCard  (+ index.ts 배럴)
+    components/  AppHeader · FloatingNav · WizardChrome · SustainMeter · MilestoneCard · AlertCard
+    lib/         money.ts(금액 포맷) · roadmap.ts(타임라인 대표 데이터, 후속 API 대체)
+  features/
+    onboarding/  Onboarding · Landing
+    auth/        Login · SignupAccount · SignupProfile · SignupDone
+    diagnosis/   pages: Intake{Basic,Income,Welfare,Goals,Priority} · Diagnosing · Roadmap · MilestoneDetail · CostRecord
+                 components: PolicyCard   model: store.ts (진단 위저드 답, reactive 싱글턴)
+    plan/        FundPlan · FundPlanAi · AllocationEdit
+    tracking/    Tracking · ExpenseAdd · TrackingBudget
+    account/     MyInfo · EditConditions
+    home/        Home (대시보드)
+```
+
+## 화면 (`src/router/index.ts`)
 
 서비스 흐름: **온보딩 → 회원가입 → 진단 정보 입력 → AI 로드맵 → 계획(목돈 배분) → 실행(체크리스트·지출)**
 
-| 경로 | 화면 | 파일 |
+| 경로 | 화면 | feature |
 |---|---|---|
-| `/` | 온보딩 | `pages/Onboarding.vue` |
-| `/landing` | 인트로 랜딩 (비로그인) | `pages/Landing.vue` |
-| `/login` | 로그인 | `pages/Login.vue` |
-| `/signup` · `/signup/profile` · `/signup/done` | 회원가입 (계정 → 인적사항 → 완료) | `pages/Signup*.vue` |
-| `/intake` · `/intake/income` · `/intake/welfare` · `/intake/goals` · `/intake/priority` | 진단 정보 입력 4단계 위저드 (수급자 분기 포함) | `pages/Intake*.vue` |
-| `/diagnosing` | 로드맵 생성 중 (로딩) | `pages/Diagnosing.vue` |
-| `/roadmap` · `/roadmap/:id` · `/roadmap/:id/cost` | 진단결과 타임라인 · 마일스톤 상세 · 비용 기록 | `pages/Roadmap.vue` · `MilestoneDetail.vue` · `CostRecord.vue` |
-| `/fund` · `/fund/ai` · `/fund/allocation` | 자금 계획 (목적별 배분 / AI 추천) · 배분 비율 조정 | `pages/FundPlan.vue` · `FundPlanAi.vue` · `AllocationEdit.vue` |
-| `/tracking` · `/tracking/add` · `/tracking/budget` | 지출 기록 · 지출/수입 추가 · 예산 대비 | `pages/Tracking.vue` · `ExpenseAdd.vue` · `TrackingBudget.vue` |
-| `/home` | 홈 대시보드 | `pages/Home.vue` |
-| `/me` · `/me/edit` | 내정보 · 조건 수정 | `pages/MyInfo.vue` · `EditConditions.vue` |
-
-공용: `components/` — `WizardChrome`(다단계 골격) · `OptionRow`(선택 행) · `FloatingNav`(하단 탭바) ·
-`ViewToggle`(뷰 전환) · `UiButton` · `UiField` · `UiChip` · `AlertCard` · `MilestoneCard` ·
-`PolicyCard` · `SustainMeter` · `StatCard` · `AppHeader`.
-진단 입력 답 상태: `src/lib/store.ts` (`reactive` 싱글턴, Pinia 도입 전).
-그 외 `src/lib/` — `money.ts`(금액 포맷) · `roadmap.ts`(타임라인 대표 데이터).
+| `/` · `/landing` | 온보딩 · 인트로 랜딩 | `onboarding` |
+| `/login` · `/signup` · `/signup/profile` · `/signup/done` | 로그인 · 회원가입 3단계 | `auth` |
+| `/intake` · `/intake/income` · `/intake/welfare` · `/intake/goals` · `/intake/priority` | 진단 정보 입력 4단계 위저드 (수급자 분기) | `diagnosis` |
+| `/diagnosing` | 로드맵 생성 중 (로딩) | `diagnosis` |
+| `/roadmap` · `/roadmap/:id` · `/roadmap/:id/cost` | 진단결과 타임라인 · 마일스톤 상세 · 비용 기록 | `diagnosis` |
+| `/fund` · `/fund/ai` · `/fund/allocation` | 자금 계획 (목적별 배분 / AI 추천) · 배분 비율 조정 | `plan` |
+| `/tracking` · `/tracking/add` · `/tracking/budget` | 지출 기록 · 지출/수입 추가 · 예산 대비 | `tracking` |
+| `/home` | 홈 대시보드 | `home` |
+| `/me` · `/me/edit` | 내정보 · 조건 수정 | `account` |
 
 ## 디자인 시스템
 
 | 파일 | 역할 |
 |---|---|
 | [`DESIGN.md`](./DESIGN.md) | 시각 언어의 단일 기준(SSOT). 색·타이포·간격·컴포넌트 스펙. |
-| [`src/style.css`](./src/style.css) `@theme` | 위 문서의 기계 판독본. Tailwind 토큰이 여기서 생성됨. **DESIGN.md와 항상 함께 수정.** |
+| [`src/styles/style.css`](./src/styles/style.css) `@theme` | 위 문서의 기계 판독본. Tailwind 토큰이 여기서 생성됨. **DESIGN.md와 항상 함께 수정.** |
 | [`.claude/CLAUDE.md`](./.claude/CLAUDE.md) | 에이전트 작업 규칙 — 대상 사용자 제약, 세 디자인 리소스의 역할·우선순위, 머지 전 체크리스트. |
 | `.claude/skills/` | `ui-ux-pro-max` · `ui-styling` · `design-system` · `brand` (생성·검색 엔진) + `design-taste-frontend` (리뷰 게이트). |
 
