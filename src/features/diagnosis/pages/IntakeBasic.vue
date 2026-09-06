@@ -4,10 +4,17 @@ import { useRouter } from 'vue-router'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiField from '@/shared/ui/UiField.vue'
 import UiChip from '@/shared/ui/UiChip.vue'
+import RegionSelect from '@/features/diagnosis/components/RegionSelect.vue'
 import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
-const REGIONS = ['서울시', '경기도', '인천시', '부산시', '대구시', '광주시', '대전시', '강원도', '제주도']
+
+// 네이티브 <input type="date"> 는 항상 ISO(YYYY-MM-DD)로 값을 주고받는다.
+// state.protectionEndDate 는 "YYYY.MM.DD" 형식(canNext 정규식·intakeRequest.ts 와 통일)이라 여기서만 변환.
+const protectionEndDateIso = computed({
+  get: () => state.protectionEndDate.replaceAll('.', '-'),
+  set: (v: string) => (state.protectionEndDate = v.replaceAll('-', '.')),
+})
 
 const canNext = computed(
   () =>
@@ -31,20 +38,14 @@ const household = computed({
     title="정보 입력"
     intro="3분이면 끝나요. 정확할수록 로드맵이 더 잘 맞아요."
     :step="1"
-    :total="4"
+    :total="3"
     step-label="기본 정보"
     back-to="/signup/done"
     :can-next="canNext"
     @next="next"
   >
     <div class="flex flex-col gap-4">
-      <UiField
-        v-model="state.protectionEndDate"
-        label="보호종료(예정)일"
-        required
-        placeholder="YYYY.MM.DD"
-        inputmode="numeric"
-      />
+      <UiField v-model="protectionEndDateIso" type="date" label="보호종료(예정)일" required />
 
       <fieldset>
         <legend class="mb-1.5 text-label text-ink">
@@ -66,19 +67,7 @@ const household = computed({
         </div>
       </fieldset>
 
-      <div>
-        <label for="region" class="mb-1.5 block text-label text-ink">
-          거주지<span class="text-danger" aria-hidden="true"> *</span>
-        </label>
-        <select
-          id="region"
-          v-model="state.region"
-          class="glass-field min-h-12 w-full rounded-md border-[1.5px] px-4 text-body text-ink focus:border-primary"
-        >
-          <option value="" disabled>지역을 선택하세요</option>
-          <option v-for="r in REGIONS" :key="r" :value="r">{{ r }}</option>
-        </select>
-      </div>
+      <RegionSelect v-model="state.region" label="현재 거주지" required />
 
       <UiField
         v-model="household"

@@ -30,7 +30,6 @@ export const router = createRouter({
     { path: '/intake/income', name: 'intake-income', component: () => import('@/features/diagnosis/pages/IntakeIncome.vue') },
     { path: '/intake/welfare', name: 'intake-welfare', component: () => import('@/features/diagnosis/pages/IntakeWelfare.vue') },
     { path: '/intake/goals', name: 'intake-goals', component: () => import('@/features/diagnosis/pages/IntakeGoals.vue') },
-    { path: '/intake/priority', name: 'intake-priority', component: () => import('@/features/diagnosis/pages/IntakePriority.vue') },
 
     // diagnosis — 결과 / 로드맵
     { path: '/diagnosing', name: 'diagnosing', component: () => import('@/features/diagnosis/pages/Diagnosing.vue') },

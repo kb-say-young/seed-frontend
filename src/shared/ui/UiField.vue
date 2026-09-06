@@ -10,7 +10,7 @@ const props = withDefaults(
     hint?: string
     error?: string
     required?: boolean
-    type?: 'text' | 'password' | 'tel' | 'email'
+    type?: 'text' | 'password' | 'tel' | 'email' | 'date'
     inputmode?: 'text' | 'numeric' | 'decimal'
     suffix?: string
   }>(),
