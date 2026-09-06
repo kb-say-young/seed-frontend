@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-vue-next'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiChip from '@/shared/ui/UiChip.vue'
 import UiField from '@/shared/ui/UiField.vue'
+import RegionSelect from '@/shared/components/RegionSelect.vue'
 import { state, GOAL_CATALOG, CATEGORY_LABEL, type GoalCategory } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
@@ -17,14 +18,17 @@ const DOT: Record<GoalCategory, string> = {
   finance: 'bg-cat-finance',
 }
 
-function isPicked(c: GoalCategory, sub: string) {
-  return state.goals.some((g) => g.category === c && g.sub === sub)
+function pickedSub(c: GoalCategory) {
+  return state.goals.find((g) => g.category === c)?.sub ?? null
 }
-function toggle(c: GoalCategory, sub: string) {
-  const i = state.goals.findIndex((g) => g.category === c && g.sub === sub)
-  if (i >= 0) state.goals.splice(i, 1)
+// 한 카테고리 = 세부 목표 1개 (Single Select). 같은 걸 다시 누르면 해제.
+function pick(c: GoalCategory, sub: string) {
+  const i = state.goals.findIndex((g) => g.category === c)
+  if (i >= 0 && state.goals[i].sub === sub) state.goals.splice(i, 1)
+  else if (i >= 0) state.goals[i] = { category: c, sub }
   else state.goals.push({ category: c, sub })
 }
+
 const amountStr = (c: GoalCategory) => {
   const g = state.goals.find((x) => x.category === c)
   return g?.targetAmount == null ? '' : String(Math.round(g.targetAmount / 10000))
@@ -33,10 +37,10 @@ const setAmount = (c: GoalCategory, v: string) => {
   const g = state.goals.find((x) => x.category === c)
   if (g) g.targetAmount = (Number(v.replace(/\D/g, '')) || 0) * 10000
 }
-const regionStr = (c: GoalCategory) => state.goals.find((x) => x.category === c)?.region ?? ''
-const setRegion = (c: GoalCategory, v: string) => {
+const regionCode = (c: GoalCategory) => state.goals.find((x) => x.category === c)?.regionCode ?? ''
+const setRegionCode = (c: GoalCategory, code: string) => {
   const g = state.goals.find((x) => x.category === c)
-  if (g) g.region = v
+  if (g) g.regionCode = code
 }
 
 const canNext = computed(() => state.goals.length > 0)
@@ -49,12 +53,13 @@ const canNext = computed(() => state.goals.length > 0)
     :total="3"
     step-label="목표"
     back-to="/intake/income"
+    next-label="진단 결과 보기"
     :can-next="canNext"
     @next="router.push('/diagnosing')"
   >
     <div>
       <h2 class="text-h3 text-ink">어떤 목표를 이루고 싶나요?</h2>
-      <p class="mt-1 text-body-sm text-muted">큰 분류 안에서 세부 목표를 골라요 (여러 개 가능)</p>
+      <p class="mt-1 text-body-sm text-muted">큰 분류마다 세부 목표를 하나씩 골라요</p>
     </div>
 
     <div class="flex flex-col gap-2">
@@ -74,9 +79,9 @@ const canNext = computed(() => state.goals.length > 0)
           <span class="flex-1">
             <span class="block text-label text-ink">{{ CATEGORY_LABEL[c.category] }}</span>
             <span
-              v-if="open !== c.category"
-              class="mt-0.5 block text-caption text-muted"
-              >{{ c.hint }}</span
+              class="mt-0.5 block text-caption"
+              :class="pickedSub(c.category) ? 'font-semibold text-primary-dark' : 'text-muted'"
+              >{{ pickedSub(c.category) ?? c.hint }}</span
             >
           </span>
           <ChevronDown
@@ -88,16 +93,16 @@ const canNext = computed(() => state.goals.length > 0)
         </button>
 
         <div v-if="open === c.category" class="border-t border-border p-4">
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2" role="radiogroup" :aria-label="`${CATEGORY_LABEL[c.category]} 세부 목표`">
             <UiChip
               v-for="s in c.subs"
               :key="s"
               :label="s"
-              :selected="isPicked(c.category, s)"
-              @toggle="toggle(c.category, s)"
+              :selected="pickedSub(c.category) === s"
+              @toggle="pick(c.category, s)"
             />
           </div>
-          <div v-if="state.goals.some((g) => g.category === c.category)" class="mt-4 flex flex-col gap-4">
+          <div v-if="pickedSub(c.category)" class="mt-4 flex flex-col gap-4">
             <UiField
               :model-value="amountStr(c.category)"
               label="희망 금액 (만원)"
@@ -105,12 +110,11 @@ const canNext = computed(() => state.goals.length > 0)
               inputmode="numeric"
               @update:model-value="setAmount(c.category, $event)"
             />
-            <UiField
+            <RegionSelect
               v-if="c.category === 'housing'"
-              :model-value="regionStr(c.category)"
+              :model-value="regionCode(c.category)"
               label="희망 거주 지역"
-              placeholder="예: 서울시 마포구"
-              @update:model-value="setRegion(c.category, $event)"
+              @update:model-value="setRegionCode(c.category, $event)"
             />
           </div>
         </div>

@@ -11,7 +11,7 @@ export interface GoalPick {
   category: GoalCategory
   sub: string // 세부 목표 라벨
   targetAmount?: number // 희망 금액 (원)
-  region?: string // 주거: 희망 거주 지역
+  regionCode?: string // 주거: 희망 거주 지역 (시군구 코드 5자리)
 }
 
 export interface State {
@@ -24,7 +24,7 @@ export interface State {
   protectionEndDate: string
   isYouthSupportApplied: boolean | null
   isBasicRecipient: boolean | null
-  region: string
+  regionCode: string // 현재 거주지 (시군구 코드 5자리)
   householdSize: number | null
   protectionType: ProtectionType | null
 
@@ -45,7 +45,7 @@ export const state = reactive<State>({
   protectionEndDate: '',
   isYouthSupportApplied: null,
   isBasicRecipient: null,
-  region: '',
+  regionCode: '',
   householdSize: null,
   protectionType: null,
   incomeBand: null,

@@ -3,31 +3,12 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiField from '@/shared/ui/UiField.vue'
+import DateWheelField from '@/shared/components/DateWheelField.vue'
+import PhoneSegments from '@/shared/components/PhoneSegments.vue'
 import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
-
-// 생년월일: 숫자만 → YYYY.MM.DD 로 . 자동 삽입 (최대 8자리)
-function formatBirth(raw: string): string {
-  const d = raw.replace(/\D/g, '').slice(0, 8)
-  return [d.slice(0, 4), d.slice(4, 6), d.slice(6, 8)].filter(Boolean).join('.')
-}
-// 전화번호: 숫자만 → 010-1234-5678 로 - 자동 삽입 (최대 11자리)
-function formatPhone(raw: string): string {
-  const d = raw.replace(/\D/g, '').slice(0, 11)
-  if (d.length <= 3) return d
-  if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`
-  return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`
-}
-
-const birth = computed({
-  get: () => state.birth,
-  set: (v: string) => (state.birth = formatBirth(v)),
-})
-const phone = computed({
-  get: () => state.phone,
-  set: (v: string) => (state.phone = formatPhone(v)),
-})
+const thisYear = new Date().getFullYear()
 
 // 가구원 수: 1~10 정수만
 const household = computed({
@@ -74,26 +55,15 @@ const canNext = computed(
         autocomplete="name"
         hint="최대 20자"
       />
-      <UiField
-        v-model="birth"
+      <DateWheelField
+        v-model="state.birth"
         label="생년월일"
         required
-        placeholder="YYYY.MM.DD"
-        inputmode="numeric"
-        :maxlength="10"
-        autocomplete="bday"
-        hint="숫자만 입력하면 점(.)이 자동으로 들어가요"
+        :min-year="thisYear - 60"
+        :max-year="thisYear - 10"
+        hint="연·월·일 칸을 눌러 다이얼로 선택해요"
       />
-      <UiField
-        v-model="phone"
-        label="전화번호"
-        required
-        placeholder="010-0000-0000"
-        inputmode="numeric"
-        :maxlength="13"
-        autocomplete="tel"
-        hint="숫자만 입력하면 하이픈(-)이 자동으로 들어가요"
-      />
+      <PhoneSegments v-model="state.phone" label="전화번호" required />
       <UiField
         v-model="household"
         label="가구원 수"
