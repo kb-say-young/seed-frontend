@@ -4,24 +4,19 @@ import { useRouter } from 'vue-router'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiField from '@/shared/ui/UiField.vue'
 import UiChip from '@/shared/ui/UiChip.vue'
-import RegionSelect from '@/features/diagnosis/components/RegionSelect.vue'
+import DateWheelField from '@/shared/components/DateWheelField.vue'
+import RegionSelect from '@/shared/components/RegionSelect.vue'
 import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
-
-// 네이티브 <input type="date"> 는 항상 ISO(YYYY-MM-DD)로 값을 주고받는다.
-// state.protectionEndDate 는 "YYYY.MM.DD" 형식(canNext 정규식·intakeRequest.ts 와 통일)이라 여기서만 변환.
-const protectionEndDateIso = computed({
-  get: () => state.protectionEndDate.replaceAll('.', '-'),
-  set: (v: string) => (state.protectionEndDate = v.replaceAll('-', '.')),
-})
+const thisYear = new Date().getFullYear()
 
 const canNext = computed(
   () =>
-    /^\d{4}[.\-/ ]*\d{2}[.\-/ ]*\d{2}$/.test(state.protectionEndDate.trim()) &&
+    /^\d{4}\.\d{2}\.\d{2}$/.test(state.protectionEndDate.trim()) &&
     state.isYouthSupportApplied !== null &&
     state.isBasicRecipient !== null &&
-    state.region !== '' &&
+    state.regionCode !== '' &&
     (state.householdSize ?? 0) > 0,
 )
 function next() {
@@ -29,7 +24,15 @@ function next() {
 }
 const household = computed({
   get: () => (state.householdSize == null ? '' : String(state.householdSize)),
-  set: (v: string) => (state.householdSize = Number(v.replace(/\D/g, '')) || null),
+  set: (v: string) => {
+    let n = parseInt(v.replace(/\D/g, '').slice(0, 2), 10)
+    if (!Number.isFinite(n) || n <= 0) {
+      state.householdSize = null
+      return
+    }
+    if (n > 10) n = 10
+    state.householdSize = n
+  },
 })
 </script>
 
@@ -45,7 +48,14 @@ const household = computed({
     @next="next"
   >
     <div class="flex flex-col gap-4">
-      <UiField v-model="protectionEndDateIso" type="date" label="보호종료(예정)일" required />
+      <DateWheelField
+        v-model="state.protectionEndDate"
+        label="보호종료(예정)일"
+        required
+        :min-year="thisYear - 20"
+        :max-year="thisYear + 5"
+        hint="예정일도 괜찮아요. 연·월·일 칸을 눌러 선택해요"
+      />
 
       <fieldset>
         <legend class="mb-1.5 text-label text-ink">
@@ -67,15 +77,22 @@ const household = computed({
         </div>
       </fieldset>
 
-      <RegionSelect v-model="state.region" label="현재 거주지" required />
+      <RegionSelect
+        v-model="state.regionCode"
+        label="현재 거주지"
+        required
+        hint="시/도를 고르면 시/군/구를 선택할 수 있어요"
+      />
 
       <UiField
         v-model="household"
         label="현재 가구원 수"
         required
-        placeholder="1"
+        placeholder="예: 1"
         inputmode="numeric"
+        :maxlength="2"
         suffix="명"
+        hint="혼자 살면 1명 · 최대 10명"
       />
     </div>
   </WizardChrome>

@@ -10,9 +10,11 @@ const props = withDefaults(
     hint?: string
     error?: string
     required?: boolean
-    type?: 'text' | 'password' | 'tel' | 'email' | 'date'
+    type?: 'text' | 'password' | 'tel' | 'email'
     inputmode?: 'text' | 'numeric' | 'decimal'
     suffix?: string
+    maxlength?: number
+    autocomplete?: string
   }>(),
   { type: 'text' },
 )
@@ -39,6 +41,8 @@ const describedby = computed(() =>
         :value="modelValue"
         :placeholder="placeholder"
         :inputmode="inputmode"
+        :maxlength="maxlength"
+        :autocomplete="autocomplete"
         :required="required"
         :aria-required="required ? 'true' : undefined"
         :aria-describedby="describedby"

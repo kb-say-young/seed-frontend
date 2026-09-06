@@ -7,7 +7,7 @@ export const navDir = ref<'forward' | 'back'>('forward')
 const pathStack: string[] = []
 
 // 씨앗 — 2026 트렌드 실험 플로우 (Figma "2026 트렌드 실험 · 진단" 기준)
-//  온보딩 → 로그인/회원가입 → 진단 정보 입력(N1~N4/n2b) → 진단 생성 → 로드맵(진단결과)
+//  온보딩 → 로그인/회원가입 → 진단 정보 입력(N1~N3) → 진단 생성 → 로드맵(진단결과)
 //  → 목표 상세/체크리스트 → 자금 계획 → 지출·진척 → 홈 / 내정보
 //
 // 라우트는 각 feature 의 pages/ 를 lazy import 한다 (배럴 경유 금지 = per-route 코드분할 유지).

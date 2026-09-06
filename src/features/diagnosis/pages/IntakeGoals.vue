@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router'
 import { ChevronDown } from 'lucide-vue-next'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiChip from '@/shared/ui/UiChip.vue'
-import GoalAnswerForm from '@/features/diagnosis/components/GoalAnswerForm.vue'
-import { state, GOAL_CATALOG, CATEGORY_LABEL, type GoalCategory, type SubCategoryCode } from '@/features/diagnosis/model/store'
+import UiField from '@/shared/ui/UiField.vue'
+import RegionSelect from '@/shared/components/RegionSelect.vue'
+import { state, GOAL_CATALOG, CATEGORY_LABEL, type GoalCategory } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
 const open = ref<GoalCategory | null>('housing')
@@ -17,21 +18,29 @@ const DOT: Record<GoalCategory, string> = {
   finance: 'bg-cat-finance',
 }
 
-function pickedSub(c: GoalCategory): SubCategoryCode | null {
+function pickedSub(c: GoalCategory) {
   return state.goals.find((g) => g.category === c)?.sub ?? null
 }
-function pickedAnswers(c: GoalCategory): Record<string, unknown> | null {
-  return state.goals.find((g) => g.category === c)?.answers ?? null
-}
-// 카테고리당 세부 목표 1개만 선택 가능(단일 선택). 같은 sub 재클릭 시 해제, 다른 sub 클릭 시 교체.
-function selectSub(c: GoalCategory, sub: SubCategoryCode) {
+// 한 카테고리 = 세부 목표 1개 (Single Select). 같은 걸 다시 누르면 해제.
+function pick(c: GoalCategory, sub: string) {
   const i = state.goals.findIndex((g) => g.category === c)
-  if (i >= 0 && state.goals[i].sub === sub) {
-    state.goals.splice(i, 1)
-    return
-  }
-  if (i >= 0) state.goals.splice(i, 1)
-  state.goals.push({ category: c, sub, answers: {} })
+  if (i >= 0 && state.goals[i].sub === sub) state.goals.splice(i, 1)
+  else if (i >= 0) state.goals[i] = { category: c, sub }
+  else state.goals.push({ category: c, sub })
+}
+
+const amountStr = (c: GoalCategory) => {
+  const g = state.goals.find((x) => x.category === c)
+  return g?.targetAmount == null ? '' : String(Math.round(g.targetAmount / 10000))
+}
+const setAmount = (c: GoalCategory, v: string) => {
+  const g = state.goals.find((x) => x.category === c)
+  if (g) g.targetAmount = (Number(v.replace(/\D/g, '')) || 0) * 10000
+}
+const regionCode = (c: GoalCategory) => state.goals.find((x) => x.category === c)?.regionCode ?? ''
+const setRegionCode = (c: GoalCategory, code: string) => {
+  const g = state.goals.find((x) => x.category === c)
+  if (g) g.regionCode = code
 }
 
 const canNext = computed(() => state.goals.length > 0)
@@ -44,12 +53,13 @@ const canNext = computed(() => state.goals.length > 0)
     :total="3"
     step-label="목표"
     back-to="/intake/income"
+    next-label="진단 결과 보기"
     :can-next="canNext"
     @next="router.push('/diagnosing')"
   >
     <div>
       <h2 class="text-h3 text-ink">어떤 목표를 이루고 싶나요?</h2>
-      <p class="mt-1 text-body-sm text-muted">큰 분류 안에서 세부 목표를 골라요 (세부 목표는 카테고리당 1개만 선택돼요)</p>
+      <p class="mt-1 text-body-sm text-muted">큰 분류마다 세부 목표를 하나씩 골라요</p>
     </div>
 
     <div class="flex flex-col gap-2">
@@ -69,9 +79,9 @@ const canNext = computed(() => state.goals.length > 0)
           <span class="flex-1">
             <span class="block text-label text-ink">{{ CATEGORY_LABEL[c.category] }}</span>
             <span
-              v-if="open !== c.category"
-              class="mt-0.5 block text-caption text-muted"
-              >{{ c.hint }}</span
+              class="mt-0.5 block text-caption"
+              :class="pickedSub(c.category) ? 'font-semibold text-primary-dark' : 'text-muted'"
+              >{{ pickedSub(c.category) ?? c.hint }}</span
             >
           </span>
           <ChevronDown
@@ -86,14 +96,26 @@ const canNext = computed(() => state.goals.length > 0)
           <div class="flex flex-wrap gap-2" role="radiogroup" :aria-label="`${CATEGORY_LABEL[c.category]} 세부 목표`">
             <UiChip
               v-for="s in c.subs"
-              :key="s.code"
-              :label="s.label"
-              :selected="pickedSub(c.category) === s.code"
-              @toggle="selectSub(c.category, s.code)"
+              :key="s"
+              :label="s"
+              :selected="pickedSub(c.category) === s"
+              @toggle="pick(c.category, s)"
             />
           </div>
-          <div v-if="pickedSub(c.category) && pickedAnswers(c.category)" class="mt-4">
-            <GoalAnswerForm :sub="pickedSub(c.category)!" :answers="pickedAnswers(c.category)!" />
+          <div v-if="pickedSub(c.category)" class="mt-4 flex flex-col gap-4">
+            <UiField
+              :model-value="amountStr(c.category)"
+              label="희망 금액 (만원)"
+              placeholder="0"
+              inputmode="numeric"
+              @update:model-value="setAmount(c.category, $event)"
+            />
+            <RegionSelect
+              v-if="c.category === 'housing'"
+              :model-value="regionCode(c.category)"
+              label="희망 거주 지역"
+              @update:model-value="setRegionCode(c.category, $event)"
+            />
           </div>
         </div>
       </div>

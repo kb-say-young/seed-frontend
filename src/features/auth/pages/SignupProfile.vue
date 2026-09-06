@@ -3,31 +3,33 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiField from '@/shared/ui/UiField.vue'
-import SegmentedNumberInput from '@/shared/ui/SegmentedNumberInput.vue'
+import DateWheelField from '@/shared/components/DateWheelField.vue'
+import PhoneSegments from '@/shared/components/PhoneSegments.vue'
 import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
+const thisYear = new Date().getFullYear()
 
-// 네이티브 <input type="date"> 는 항상 ISO(YYYY-MM-DD)로 값을 주고받는다.
-// state.birth 는 "YYYY.MM.DD" 형식(canNext 정규식·intakeRequest.ts 와 통일)이라 여기서만 변환.
-const birthIso = computed({
-  get: () => state.birth.replaceAll('.', '-'),
-  set: (v: string) => (state.birth = v.replaceAll('-', '.')),
-})
-
+// 가구원 수: 1~10 정수만
 const household = computed({
   get: () => (state.householdSize == null ? '' : String(state.householdSize)),
   set: (v: string) => {
-    const n = parseInt(v.replace(/\D/g, ''), 10)
-    state.householdSize = Number.isFinite(n) && n > 0 ? n : null
+    const digits = v.replace(/\D/g, '').slice(0, 2)
+    let n = parseInt(digits, 10)
+    if (!Number.isFinite(n) || n <= 0) {
+      state.householdSize = null
+      return
+    }
+    if (n > 10) n = 10
+    state.householdSize = n
   },
 })
 
 const canNext = computed(
   () =>
     state.name.trim() !== '' &&
-    /^\d{4}[.\-/]\d{2}[.\-/]\d{2}$/.test(state.birth.trim()) &&
-    state.phone.replace(/\D/g, '').length >= 9 &&
+    /^\d{4}\.\d{2}\.\d{2}$/.test(state.birth.trim()) &&
+    state.phone.replace(/\D/g, '').length >= 10 &&
     state.householdSize != null,
 )
 </script>
@@ -44,30 +46,33 @@ const canNext = computed(
   >
     <p class="text-body-sm text-muted">지원 자격과 지원금 계산에 사용해요</p>
     <div class="flex flex-col gap-4">
-      <UiField v-model="state.name" label="이름" required placeholder="홍길동" />
       <UiField
-        v-model="birthIso"
-        type="date"
+        v-model="state.name"
+        label="이름"
+        required
+        placeholder="홍길동"
+        :maxlength="20"
+        autocomplete="name"
+        hint="최대 20자"
+      />
+      <DateWheelField
+        v-model="state.birth"
         label="생년월일"
         required
-        hint="만 17~18세 보호종료 예정 · 만 24세 이하 보호종료 청년"
+        :min-year="thisYear - 60"
+        :max-year="thisYear - 10"
+        hint="연·월·일 칸을 눌러 다이얼로 선택해요"
       />
-      <SegmentedNumberInput
-        v-model="state.phone"
-        label="전화번호"
-        required
-        :segments="[3, 4, 4]"
-        separator="-"
-        :segment-aria-labels="['전화번호 앞자리', '전화번호 가운데자리', '전화번호 끝자리']"
-      />
+      <PhoneSegments v-model="state.phone" label="전화번호" required />
       <UiField
         v-model="household"
         label="가구원 수"
         required
         placeholder="예: 1"
         inputmode="numeric"
+        :maxlength="2"
         suffix="명"
-        hint="함께 생계를 꾸리는 사람 수 (혼자 살면 1명)"
+        hint="함께 생계를 꾸리는 사람 수 (혼자 살면 1명 · 최대 10명)"
       />
     </div>
   </WizardChrome>
