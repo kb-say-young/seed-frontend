@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 
-// 진단 정보 입력(N1~N4) 답을 담는 가벼운 전역 상태. 서버 전송 전까지 메모리 보관.
-// Figma "2026 트렌드 실험 · 진단" 플로우 기준.
+// 진단 정보 입력(N1~N3) 답을 담는 가벼운 전역 상태. 서버 전송 전까지 메모리 보관.
+// Figma "2026 트렌드 실험 · 진단" 플로우 기준. (우선순위 단계는 제거됨 — issue #8)
 
 export type ProtectionType = 'facility' | 'foster' | 'group'
 export type IncomeBand = 'none' | 'lt100' | '100to200' | '200to300' | 'gte300'
@@ -36,9 +36,6 @@ export interface State {
 
   // N3 목표 선택
   goals: GoalPick[]
-
-  // N4 우선순위 — goals 의 `${category}:${sub}` 를 순서대로
-  priority: string[]
 }
 
 export const state = reactive<State>({
@@ -56,7 +53,6 @@ export const state = reactive<State>({
   cdaBalance: null,
   youthAllowance: null,
   goals: [],
-  priority: [],
 })
 
 export const goalKey = (g: GoalPick) => `${g.category}:${g.sub}`
@@ -75,8 +71,3 @@ export const GOAL_CATALOG: { category: GoalCategory; subs: string[]; hint: strin
   { category: 'work', subs: ['일자리 교육', '취창업 지원금', '교육 지원금'], hint: '일자리 교육, 취창업 지원금, 교육 지원금' },
   { category: 'finance', subs: ['대출', '적금'], hint: '대출, 적금' },
 ]
-
-export function togglePriority(k: string, on: boolean) {
-  if (on && !state.priority.includes(k)) state.priority.push(k)
-  if (!on) state.priority = state.priority.filter((x) => x !== k)
-}

@@ -28,7 +28,7 @@ const canNext = computed(() => state.incomeBand !== null && state.monthlyBudget 
     title="정보 입력"
     intro="정확할수록 내게 꼭 맞는 자금 매칭 혜택을 찾을 수 있어요."
     :step="2"
-    :total="4"
+    :total="3"
     step-label="소득·예산"
     back-to="/intake"
     :can-next="canNext"

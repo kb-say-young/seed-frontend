@@ -19,7 +19,7 @@ const canNext = computed(() => state.cdaBalance != null && state.monthlyBudget !
     title="정보 입력"
     intro="기초생활수급자로 확인되었어요. 소득 대신 자립 자금 현황을 알려주세요."
     :step="2"
-    :total="4"
+    :total="3"
     step-label="자립 자금"
     back-to="/intake"
     :can-next="canNext"

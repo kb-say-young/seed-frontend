@@ -46,11 +46,11 @@ const canNext = computed(() => state.goals.length > 0)
   <WizardChrome
     title="정보 입력"
     :step="3"
-    :total="4"
+    :total="3"
     step-label="목표"
     back-to="/intake/income"
     :can-next="canNext"
-    @next="router.push('/intake/priority')"
+    @next="router.push('/diagnosing')"
   >
     <div>
       <h2 class="text-h3 text-ink">어떤 목표를 이루고 싶나요?</h2>
