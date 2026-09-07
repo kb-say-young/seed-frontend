@@ -4,17 +4,19 @@ import { useRouter } from 'vue-router'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiField from '@/shared/ui/UiField.vue'
 import UiChip from '@/shared/ui/UiChip.vue'
+import DateWheelField from '@/shared/components/DateWheelField.vue'
+import RegionSelect from '@/shared/components/RegionSelect.vue'
 import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
-const REGIONS = ['서울시', '경기도', '인천시', '부산시', '대구시', '광주시', '대전시', '강원도', '제주도']
+const thisYear = new Date().getFullYear()
 
 const canNext = computed(
   () =>
-    /^\d{4}[.\-/ ]*\d{2}[.\-/ ]*\d{2}$/.test(state.protectionEndDate.trim()) &&
+    /^\d{4}\.\d{2}\.\d{2}$/.test(state.protectionEndDate.trim()) &&
     state.isYouthSupportApplied !== null &&
     state.isBasicRecipient !== null &&
-    state.region !== '' &&
+    state.regionCode !== '' &&
     (state.householdSize ?? 0) > 0,
 )
 function next() {
@@ -22,7 +24,15 @@ function next() {
 }
 const household = computed({
   get: () => (state.householdSize == null ? '' : String(state.householdSize)),
-  set: (v: string) => (state.householdSize = Number(v.replace(/\D/g, '')) || null),
+  set: (v: string) => {
+    let n = parseInt(v.replace(/\D/g, '').slice(0, 2), 10)
+    if (!Number.isFinite(n) || n <= 0) {
+      state.householdSize = null
+      return
+    }
+    if (n > 10) n = 10
+    state.householdSize = n
+  },
 })
 </script>
 
@@ -31,19 +41,20 @@ const household = computed({
     title="정보 입력"
     intro="3분이면 끝나요. 정확할수록 로드맵이 더 잘 맞아요."
     :step="1"
-    :total="4"
+    :total="3"
     step-label="기본 정보"
     back-to="/signup/done"
     :can-next="canNext"
     @next="next"
   >
     <div class="flex flex-col gap-4">
-      <UiField
+      <DateWheelField
         v-model="state.protectionEndDate"
         label="보호종료(예정)일"
         required
-        placeholder="YYYY.MM.DD"
-        inputmode="numeric"
+        :min-year="thisYear - 20"
+        :max-year="thisYear + 5"
+        hint="예정일도 괜찮아요. 연·월·일 칸을 눌러 선택해요"
       />
 
       <fieldset>
@@ -66,27 +77,22 @@ const household = computed({
         </div>
       </fieldset>
 
-      <div>
-        <label for="region" class="mb-1.5 block text-label text-ink">
-          거주지<span class="text-danger" aria-hidden="true"> *</span>
-        </label>
-        <select
-          id="region"
-          v-model="state.region"
-          class="glass-field min-h-12 w-full rounded-md border-[1.5px] px-4 text-body text-ink focus:border-primary"
-        >
-          <option value="" disabled>지역을 선택하세요</option>
-          <option v-for="r in REGIONS" :key="r" :value="r">{{ r }}</option>
-        </select>
-      </div>
+      <RegionSelect
+        v-model="state.regionCode"
+        label="현재 거주지"
+        required
+        hint="시/도를 고르면 시/군/구를 선택할 수 있어요"
+      />
 
       <UiField
         v-model="household"
         label="현재 가구원 수"
         required
-        placeholder="1"
+        placeholder="예: 1"
         inputmode="numeric"
+        :maxlength="2"
         suffix="명"
+        hint="혼자 살면 1명 · 최대 10명"
       />
     </div>
   </WizardChrome>
