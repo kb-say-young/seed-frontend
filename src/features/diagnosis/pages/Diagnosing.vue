@@ -1,10 +1,32 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { userApi, ApiError } from '@/shared/api'
+import { isLoggedIn } from '@/shared/lib/auth'
+import { buildIntakePayload, IntakeIncompleteError } from '@/features/diagnosis/model/intake'
 
 const router = useRouter()
+const errorMsg = ref('')
+
+// 로그인 상태면 진단 정보를 서버에 제출한다.
+// ⚠️ 현재 BE 응답이 204라 diagnosisId 를 못 받음 → 로드맵 조회 연동은 BE #30/#33 확정 후.
+// (issue #14). 제출 성공/실패와 무관하게 로드맵 화면(현재 목데이터)으로 진행한다.
+async function submit() {
+  if (!isLoggedIn()) return
+  try {
+    await userApi.submitIntake(buildIntakePayload())
+  } catch (e) {
+    if (e instanceof IntakeIncompleteError) errorMsg.value = e.message
+    else if (e instanceof ApiError) errorMsg.value = e.message
+    else errorMsg.value = '진단 정보 제출에 실패했어요.'
+    // 데모 흐름은 유지 — 콘솔에만 남긴다.
+    console.warn('[intake]', e)
+  }
+}
+
 let t: ReturnType<typeof setTimeout> | undefined
 onMounted(() => {
+  void submit()
   t = setTimeout(() => router.replace('/roadmap'), 2200)
 })
 onUnmounted(() => t && clearTimeout(t))
@@ -43,5 +65,7 @@ const steps = [
         <span class="text-body-sm" :class="s.done ? 'text-ink' : 'text-text-muted'">{{ s.t }}</span>
       </li>
     </ul>
+
+    <p v-if="errorMsg" class="mt-6 text-caption text-amber">{{ errorMsg }}</p>
   </div>
 </template>
