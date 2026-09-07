@@ -91,7 +91,8 @@ src/
   shared/
     ui/         디자인시스템 원자 (UiButton·UiField·UiChip·OptionRow·ViewToggle·StatCard) + index.ts 배럴
     components/  여러 feature 공유 셸·위젯 (AppHeader·FloatingNav·WizardChrome·SustainMeter·MilestoneCard·AlertCard)
-    lib/         money.ts · roadmap.ts (도메인 대표 데이터, 후속 API 대체 예정)
+    api/         http.ts (fetch 래퍼·공통응답 언랩·401 재발급) + 도메인별 모듈(auth·region·user·diagnosis) + index.ts 배럴
+    lib/         money.ts · roadmap.ts (도메인 대표 데이터, API 연동으로 점진 대체) · auth.ts (토큰 저장)
   features/
     onboarding/  auth/  diagnosis/  plan/  tracking/  account/  home/
       각 feature: pages/ (화면) · components/ (그 feature 전용) · model/ (store·타입) · api/ (후속)
