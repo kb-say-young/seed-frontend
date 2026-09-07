@@ -1,0 +1,5 @@
+export { http, ApiError, type RequestOptions } from '@/shared/api/http'
+export * as authApi from '@/shared/api/auth'
+export * as regionApi from '@/shared/api/region'
+export * as userApi from '@/shared/api/user'
+export * as diagnosisApi from '@/shared/api/diagnosis'

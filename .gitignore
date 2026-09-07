@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Env (VITE_API_BASE_URL 등)
+.env
+.env.*
+!.env.example
