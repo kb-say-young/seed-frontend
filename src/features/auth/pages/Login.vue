@@ -9,10 +9,14 @@ import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
 const loginId = ref(state.loginId)
+// 비밀번호: 화면에는 두되 백엔드로 보내지 않는다 (현재 계약은 아이디만).
+const pw = ref('')
 const error = ref('')
 const submitting = ref(false)
 
-const canSubmit = computed(() => loginId.value.trim().length >= 4 && !submitting.value)
+const canSubmit = computed(
+  () => loginId.value.trim().length >= 4 && pw.value.length >= 1 && !submitting.value,
+)
 
 async function submit() {
   if (!canSubmit.value) return
@@ -37,7 +41,7 @@ async function submit() {
 <template>
   <div class="flex min-h-svh flex-col bg-transparent px-6 pb-7 pt-14">
     <h1 class="text-h2 text-ink">로그인</h1>
-    <p class="mt-2 text-body-sm text-muted">가입할 때 정한 아이디를 입력해 주세요</p>
+    <p class="mt-2 text-body-sm text-muted">아이디와 비밀번호를 입력해 주세요</p>
 
     <form id="main" class="mt-8 flex flex-col gap-4" @submit.prevent="submit">
       <UiField
@@ -46,6 +50,13 @@ async function submit() {
         placeholder="아이디 입력"
         autocomplete="username"
         :error="error"
+      />
+      <UiField
+        v-model="pw"
+        label="비밀번호"
+        type="password"
+        placeholder="비밀번호 입력"
+        autocomplete="current-password"
       />
       <button type="submit" class="sr-only">로그인</button>
     </form>
