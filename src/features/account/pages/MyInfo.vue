@@ -2,15 +2,26 @@
 import { useRouter } from 'vue-router'
 import { ChevronRight } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
+import { authApi } from '@/shared/api'
 
 const router = useRouter()
+
+// 이동 가능한 메뉴
 const menu = [
   { t: '입력한 조건 수정', to: '/me/edit' },
-  { t: '목표·우선순위 수정', to: '/me/edit' },
+  { t: '목표 수정', to: '/me/edit' },
   { t: '로드맵 다시 만들기', to: '/me/edit' },
-  { t: '알림 설정', to: '/me' },
-  { t: '자주 묻는 질문', to: '/me' },
 ]
+// 화면 준비 중 (이동 안 함)
+const upcoming = ['알림 설정', '자주 묻는 질문']
+
+async function logout() {
+  try {
+    await authApi.logout()
+  } finally {
+    router.push('/login')
+  }
+}
 </script>
 
 <template>
@@ -41,10 +52,20 @@ const menu = [
           {{ m.t }}
           <ChevronRight :size="16" class="text-text-muted" aria-hidden="true" />
         </RouterLink>
+
+        <div
+          v-for="t in upcoming"
+          :key="t"
+          class="flex items-center justify-between border-b border-border py-4 text-body-sm text-muted"
+        >
+          {{ t }}
+          <span class="rounded-full bg-surface-subtle px-2 py-0.5 text-caption">준비 중</span>
+        </div>
+
         <button
           type="button"
           class="tap-target w-full border-b border-border py-4 text-left text-body-sm font-medium text-danger"
-          @click="router.push('/login')"
+          @click="logout"
         >
           로그아웃
         </button>

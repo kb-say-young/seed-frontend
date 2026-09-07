@@ -3,24 +3,35 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiField from '@/shared/ui/UiField.vue'
-import UiChip from '@/shared/ui/UiChip.vue'
-import { state, type IncomeBand } from '@/features/diagnosis/model/store'
-import { moneyModel } from '@/shared/lib/money'
+import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
-const BANDS: { v: IncomeBand; label: string }[] = [
-  { v: 'none', label: '없음' },
-  { v: 'lt100', label: '100만원 미만' },
-  { v: '100to200', label: '100~200만원' },
-  { v: '200to300', label: '200~300만원' },
-  { v: 'gte300', label: '300만원 이상' },
-]
 
-const budget = moneyModel(() => state.monthlyBudget, (n) => (state.monthlyBudget = n))
-const cda = moneyModel(() => state.cdaBalance, (n) => (state.cdaBalance = n))
-const allowance = moneyModel(() => state.youthAllowance, (n) => (state.youthAllowance = n))
+// 백엔드 user_profile: income(월 평균 소득, 원 · 0 허용), fixed_budget(디딤씨앗통장 잔액).
+// 0 도 유효값이므로 moneyModel(0→null) 대신 직접 computed.
+function amountModel(get: () => number | null, set: (n: number | null) => void) {
+  return computed({
+    get: () => {
+      const n = get()
+      return n == null ? '' : n.toLocaleString('ko-KR')
+    },
+    set: (v: string) => {
+      const digits = v.replace(/[^\d]/g, '')
+      set(digits === '' ? null : Number(digits))
+    },
+  })
+}
 
-const canNext = computed(() => state.incomeBand !== null && state.monthlyBudget != null)
+const income = amountModel(
+  () => state.monthlyIncome,
+  (n) => (state.monthlyIncome = n),
+)
+const cda = amountModel(
+  () => state.cdaBalance,
+  (n) => (state.cdaBalance = n),
+)
+
+const canNext = computed(() => state.monthlyIncome != null && state.cdaBalance != null)
 </script>
 
 <template>
@@ -35,24 +46,24 @@ const canNext = computed(() => state.incomeBand !== null && state.monthlyBudget 
     @next="router.push('/intake/goals')"
   >
     <div class="flex flex-col gap-4">
-      <fieldset>
-        <legend class="mb-1.5 text-label text-ink">
-          월 평균 소득 구간<span class="text-danger" aria-hidden="true"> *</span>
-        </legend>
-        <div class="flex flex-wrap gap-2" role="radiogroup" aria-label="월 평균 소득 구간">
-          <UiChip
-            v-for="b in BANDS"
-            :key="b.v"
-            :label="b.label"
-            :selected="state.incomeBand === b.v"
-            @toggle="state.incomeBand = b.v"
-          />
-        </div>
-      </fieldset>
-
-      <UiField v-model="budget" label="월 예산 (자립 자금)" required placeholder="0" inputmode="numeric" suffix="원" />
-      <UiField v-model="cda" label="디딤씨앗통장 잔액" required placeholder="0" inputmode="numeric" suffix="원" />
-      <UiField v-model="allowance" label="월 자립수당 금액" required placeholder="0" inputmode="numeric" suffix="원" />
+      <UiField
+        v-model="income"
+        label="월 평균 소득"
+        required
+        placeholder="0"
+        inputmode="numeric"
+        suffix="원"
+        hint="최근 3개월 평균. 소득이 없으면 0"
+      />
+      <UiField
+        v-model="cda"
+        label="디딤씨앗통장 잔액"
+        required
+        placeholder="0"
+        inputmode="numeric"
+        suffix="원"
+        hint="만 18세 이후 적립된 금액"
+      />
     </div>
   </WizardChrome>
 </template>
