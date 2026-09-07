@@ -43,6 +43,10 @@ export const router = createRouter({
     { path: '/fund/ai', name: 'fund-ai', component: () => import('@/features/plan/pages/FundPlanAi.vue') },
     { path: '/fund/allocation', name: 'allocation', component: () => import('@/features/plan/pages/AllocationEdit.vue') },
 
+    // savings — 모은 돈(적립 추적)
+    { path: '/savings', name: 'savings', component: () => import('@/features/savings/pages/Savings.vue') },
+    { path: '/savings/:category', name: 'savings-category', component: () => import('@/features/savings/pages/SavingsCategory.vue') },
+
     // tracking — 지출·진척
     { path: '/tracking', name: 'tracking', component: () => import('@/features/tracking/pages/Tracking.vue') },
     { path: '/tracking/add', name: 'expense-add', component: () => import('@/features/tracking/pages/ExpenseAdd.vue') },

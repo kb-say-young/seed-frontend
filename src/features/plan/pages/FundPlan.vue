@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { CircleCheck, CircleAlert, Plus } from 'lucide-vue-next'
+import { CircleCheck, CircleAlert, Plus, ChevronRight } from 'lucide-vue-next'
 import AppHeader from '@/shared/components/AppHeader.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
@@ -52,6 +52,17 @@ const checks = [
         <p class="tabular mt-1 text-h1 text-ink">{{ won(total) }}</p>
         <p class="mt-1 text-caption text-muted">자립정착금 8,000,000 + 지원금 4,532,000</p>
       </section>
+
+      <RouterLink
+        to="/savings"
+        class="glass-tint flex items-center gap-3 rounded-2xl p-4 no-underline"
+      >
+        <span class="min-w-0 flex-1">
+          <span class="block text-label font-bold text-primary-dark">모은 돈 보기</span>
+          <span class="mt-0.5 block text-body-sm text-body">카테고리별 적립 현황과 추이 확인</span>
+        </span>
+        <ChevronRight :size="20" class="shrink-0 text-primary-dark" aria-hidden="true" />
+      </RouterLink>
 
       <section>
         <h2 class="text-label text-ink">목적별 배분</h2>

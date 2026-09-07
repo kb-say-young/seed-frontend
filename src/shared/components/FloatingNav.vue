@@ -14,6 +14,8 @@ const items = [
 const route = useRoute()
 function isOn(to: string) {
   if (to === '/home') return route.path === '/home'
+  // 모은 돈(/savings)은 자금 탭 아래로 취급
+  if (to === '/fund' && route.path.startsWith('/savings')) return true
   return route.path === to || route.path.startsWith(to + '/')
 }
 </script>
