@@ -138,7 +138,6 @@ async function submit() {
           placeholder="영문·숫자 4~30자"
           :maxlength="30"
           autocomplete="username"
-          hint="다른 사람에게 보이지 않아요"
           :error="idError"
         />
         <UiField
@@ -148,7 +147,6 @@ async function submit() {
           required
           placeholder="8자 이상"
           autocomplete="new-password"
-          hint="영문·숫자·기호를 섞으면 더 안전해요"
         />
         <button type="submit" class="sr-only">다음</button>
       </form>
@@ -175,7 +173,6 @@ async function submit() {
           placeholder="홍길동"
           :maxlength="20"
           autocomplete="name"
-          hint="최대 20자"
         />
         <DateWheelField
           v-model="state.birth"
@@ -183,7 +180,6 @@ async function submit() {
           required
           :min-year="thisYear - 60"
           :max-year="thisYear - 10"
-          hint="연·월·일 칸을 눌러 다이얼로 선택해요"
         />
         <PhoneSegments v-model="state.phone" label="전화번호" required />
         <UiField
@@ -194,7 +190,6 @@ async function submit() {
           inputmode="numeric"
           :maxlength="2"
           suffix="명"
-          hint="함께 생계를 꾸리는 사람 수 (혼자 살면 1명 · 최대 10명)"
         />
         <button type="submit" class="sr-only">다음</button>
       </form>
