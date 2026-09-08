@@ -6,6 +6,7 @@ import UiButton from '@/shared/ui/UiButton.vue'
 
 // 생년월일 / 보호종료(예정)일 입력. 연·월·일 버튼을 누르면 다이얼(휠 피커) 시트가 열린다.
 // 직접 타이핑 없음. v-model 값은 "YYYY.MM.DD" 문자열.
+// 값이 없을 때 시트를 열면 항상 오늘 날짜(연도는 min/max 범위로 클램프)에서 시작한다.
 const props = withDefaults(
   defineProps<{
     modelValue: string
@@ -14,10 +15,8 @@ const props = withDefaults(
     hint?: string
     minYear?: number
     maxYear?: number
-    // 값이 없을 때 시트를 열면 오늘 날짜로 시작한다 (예: 보호종료 예정일)
-    defaultToday?: boolean
   }>(),
-  { minYear: 1990, maxYear: new Date().getFullYear() + 5, defaultToday: false },
+  { minYear: 1990, maxYear: new Date().getFullYear() + 5 },
 )
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
@@ -52,13 +51,10 @@ function openSheet(col: 'y' | 'm' | 'd') {
   const p = parts.value
   const now = new Date()
   const clampYear = (v: number) => Math.min(props.maxYear, Math.max(props.minYear, v))
-  const fallback = props.defaultToday
-    ? { y: clampYear(now.getFullYear()), m: now.getMonth() + 1, d: now.getDate() }
-    : { y: clampYear(now.getFullYear() - 20), m: 1, d: 1 }
   draft.value = {
-    y: p?.y ?? fallback.y,
-    m: p?.m ?? fallback.m,
-    d: p?.d ?? fallback.d,
+    y: p?.y ?? clampYear(now.getFullYear()),
+    m: p?.m ?? now.getMonth() + 1,
+    d: p?.d ?? now.getDate(),
   }
   focusCol.value = col
   open.value = true
