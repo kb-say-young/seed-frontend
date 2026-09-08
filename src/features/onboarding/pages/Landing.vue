@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { Sprout } from 'lucide-vue-next'
 import UiButton from '@/shared/ui/UiButton.vue'
 
 // Figma "인트로 랜딩" — 비로그인 진입 화면. 히어로 + 단일 CTA + 3단계 안내.
@@ -26,7 +25,7 @@ const tabs = [
 
     <div class="mt-6 flex flex-col items-center text-center">
       <div class="grid size-20 place-items-center rounded-full bg-primary-tint">
-        <Sprout :size="40" class="text-primary-bright" :stroke-width="1.75" aria-hidden="true" />
+        <img src="/sprout.png" alt="씨앗 로고" width="444" height="434" class="size-12 object-contain" />
       </div>
       <h1 id="main" class="mt-5 text-h1 text-ink">나도 모르게 놓친 돈,<br />지금 확인하세요</h1>
       <p class="mt-2 text-body-sm text-muted">

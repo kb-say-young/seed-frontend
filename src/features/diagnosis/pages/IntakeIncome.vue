@@ -37,7 +37,6 @@ const canNext = computed(() => state.monthlyIncome != null && state.cdaBalance !
 <template>
   <WizardChrome
     title="정보 입력"
-    intro="정확할수록 내게 꼭 맞는 자금 매칭 혜택을 찾을 수 있어요."
     :step="2"
     :total="3"
     step-label="소득·예산"
@@ -53,7 +52,6 @@ const canNext = computed(() => state.monthlyIncome != null && state.cdaBalance !
         placeholder="0"
         inputmode="numeric"
         suffix="원"
-        hint="최근 3개월 평균. 소득이 없으면 0"
       />
       <UiField
         v-model="cda"
@@ -62,7 +60,6 @@ const canNext = computed(() => state.monthlyIncome != null && state.cdaBalance !
         placeholder="0"
         inputmode="numeric"
         suffix="원"
-        hint="만 18세 이후 적립된 금액"
       />
     </div>
   </WizardChrome>

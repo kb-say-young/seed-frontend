@@ -36,7 +36,6 @@ const canNext = computed(() => state.monthlyIncome != null && state.cdaBalance !
 <template>
   <WizardChrome
     title="정보 입력"
-    intro="기초생활수급자로 확인되었어요. 자립 자금 현황을 알려주세요."
     :step="2"
     :total="3"
     step-label="자립 자금"
@@ -52,7 +51,6 @@ const canNext = computed(() => state.monthlyIncome != null && state.cdaBalance !
         placeholder="0"
         inputmode="numeric"
         suffix="원"
-        hint="일해서 버는 소득이 없으면 0 을 입력해요"
       />
       <UiField
         v-model="cda"
@@ -61,7 +59,6 @@ const canNext = computed(() => state.monthlyIncome != null && state.cdaBalance !
         placeholder="0"
         inputmode="numeric"
         suffix="원"
-        hint="만 18세 이후 적립된 금액을 입력해주세요"
       />
     </div>
   </WizardChrome>

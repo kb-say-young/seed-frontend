@@ -21,8 +21,8 @@ export const router = createRouter({
 
     // auth
     { path: '/login', name: 'login', component: () => import('@/features/auth/pages/Login.vue') },
-    { path: '/signup', name: 'signup-account', component: () => import('@/features/auth/pages/SignupAccount.vue') },
-    { path: '/signup/profile', name: 'signup-profile', component: () => import('@/features/auth/pages/SignupProfile.vue') },
+    { path: '/signup', name: 'signup', component: () => import('@/features/auth/pages/SignupWizard.vue') },
+    { path: '/signup/profile', redirect: { path: '/signup', query: { step: '2' } } },
     { path: '/signup/done', name: 'signup-done', component: () => import('@/features/auth/pages/SignupDone.vue') },
 
     // diagnosis — 정보 입력
