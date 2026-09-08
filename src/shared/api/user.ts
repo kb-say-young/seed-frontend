@@ -8,7 +8,22 @@ export interface SignUpRequest {
   name: string // 이름 (20자 이하)
   birthDate: string // 생년월일 "yyyy-MM-dd" (BE LocalDate — ISO)
   phoneNumber: string // 휴대폰 번호 "010" + 숫자 8자리 (하이픈 제외)
+  education: Education // 학력 — BE @Pattern 으로 아래 9개만 허용
 }
+
+// 백엔드 SignUpRequest.education 의 allowableValues 와 1:1 (issue #29 / BE #53)
+export const EDUCATIONS = [
+  '고졸미만',
+  '고교재학',
+  '고졸예정',
+  '고교졸업',
+  '대학재학',
+  '대졸예정',
+  '대학졸업',
+  '석박사',
+  '기타',
+] as const
+export type Education = (typeof EDUCATIONS)[number]
 
 export interface SignUpResponse {
   id: number

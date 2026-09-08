@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import type { Education } from '@/shared/api/user'
 
 // 진단 정보 입력(N1~N3) 답을 담는 가벼운 전역 상태. 서버 전송 전까지 메모리 보관.
 // 필드는 백엔드 계약(POST /api/users/me/intake · user_profile snake_case)에 대응한다.
@@ -18,6 +19,7 @@ export interface State {
   name: string // BE 저장 위치 미확정 (issue #33 대기) — 우선 클라이언트 보관
   birth: string
   phone: string
+  education: Education | '' // 학력 (미선택이면 '') — 회원가입 필수
 
   // N1 기본 정보 → user_profile
   protectionEndDate: string // "YYYY.MM.DD" (제출 시 "YYYY-MM-DD" 로 변환) → protection_end_date
@@ -39,6 +41,7 @@ export const state = reactive<State>({
   name: '',
   birth: '',
   phone: '',
+  education: '',
   protectionEndDate: '',
   isYouthSupportApplied: null,
   isBasicRecipient: null,

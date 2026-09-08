@@ -6,6 +6,7 @@ import UiButton from '@/shared/ui/UiButton.vue'
 import DateWheelField from '@/shared/components/DateWheelField.vue'
 import PhoneSegments from '@/shared/components/PhoneSegments.vue'
 import { userApi, ApiError } from '@/shared/api'
+import { EDUCATIONS, type Education } from '@/shared/api/user'
 import { setTokens } from '@/shared/lib/auth'
 import { state } from '@/features/diagnosis/model/store'
 
@@ -70,11 +71,17 @@ const canSubmit = computed(
     !submitting.value &&
     state.name.trim() !== '' &&
     /^\d{4}\.\d{2}\.\d{2}$/.test(state.birth.trim()) &&
-    /^010\d{8}$/.test(state.phone.replace(/\D/g, '')),
+    /^010\d{8}$/.test(state.phone.replace(/\D/g, '')) &&
+    state.education !== '',
 )
 
-// 아이디(1단계) + 이름·생년월일·전화번호(2단계)를 모두 입력한 뒤, 여기서 가입 요청을 한 번만 보낸다.
-// 백엔드 계약(POST /api/users/signup)은 loginId·name·birthDate(yyyy-MM-dd · LocalDate)·phoneNumber(010########) 를 받는다.
+// 학력 선택지 — 옵션이 9개라 칩 대신 네이티브 <select>(모바일 기본 피커·접근성).
+// RegionSelect 와 같은 방식. 값은 백엔드 @Pattern 과 정확히 일치해야 한다.
+const selectCls =
+  'glass-field min-h-12 w-full rounded-md border-[1.5px] px-4 text-body text-ink focus:border-primary'
+
+// 아이디(1단계) + 이름·생년월일·전화번호·학력(2단계)을 모두 입력한 뒤, 여기서 가입 요청을 한 번만 보낸다.
+// 백엔드 계약(POST /api/users/signup)은 loginId·name·birthDate(yyyy-MM-dd · LocalDate)·phoneNumber(010########)·education 을 받는다.
 // 비밀번호는 서버에 저장 경로가 없어(로그인은 아이디만) 화면 입력만 받고 전송하지 않는다.
 async function submit() {
   if (!canSubmit.value) return
@@ -86,6 +93,7 @@ async function submit() {
       name: state.name.trim(),
       birthDate: state.birth.trim().replace(/\./g, '-'), // "1999.01.01" → "1999-01-01" (BE LocalDate)
       phoneNumber: state.phone.replace(/\D/g, ''), // "010-1234-5678" → "01012345678"
+      education: state.education as Education,
     })
     state.loginId = res.loginId
 
@@ -187,6 +195,16 @@ async function submit() {
           :max-year="thisYear"
         />
         <PhoneSegments v-model="state.phone" label="전화번호" required />
+        <fieldset>
+          <legend class="mb-1.5 text-label text-ink">
+            학력<span class="text-danger" aria-hidden="true"> *</span>
+            <span class="sr-only"> (필수)</span>
+          </legend>
+          <select v-model="state.education" aria-label="학력" :class="selectCls">
+            <option value="" disabled>선택해 주세요</option>
+            <option v-for="e in EDUCATIONS" :key="e" :value="e">{{ e }}</option>
+          </select>
+        </fieldset>
         <button type="submit" class="sr-only">다음</button>
       </form>
 
