@@ -6,7 +6,9 @@
 
 import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '@/shared/lib/auth'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
+// 비어 있으면 상대경로(/api/...) → 개발 서버 프록시(vite.config server.proxy)로 전달.
+// 배포 시 VITE_API_BASE_URL 에 실제 API 오리진을 지정.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export class ApiError extends Error {
   readonly code: string

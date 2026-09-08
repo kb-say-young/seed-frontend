@@ -16,7 +16,8 @@ export interface GoalPick {
 
 export interface State {
   // 회원가입
-  name: string
+  loginId: string // 백엔드 회원가입/로그인 식별자 (아이디만)
+  name: string // BE 저장 위치 미확정 (issue #33 대기) — 우선 클라이언트 보관
   birth: string
   phone: string
 
@@ -39,6 +40,7 @@ export interface State {
 }
 
 export const state = reactive<State>({
+  loginId: '',
   name: '',
   birth: '',
   phone: '',
