@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import WizardChrome from '@/shared/components/WizardChrome.vue'
 import UiField from '@/shared/ui/UiField.vue'
+import UiButton from '@/shared/ui/UiButton.vue'
 import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
@@ -18,23 +18,20 @@ const canNext = computed(() => {
 })
 
 function next() {
+  if (!canNext.value) return
   state.loginId = loginId.value.trim()
   router.push('/signup/profile')
 }
 </script>
 
 <template>
-  <WizardChrome
-    title="회원가입"
-    :step="1"
-    :total="3"
-    step-label="계정"
-    back-to="/"
-    :can-next="canNext"
-    @next="next"
-  >
-    <p class="text-body-sm text-muted">로그인에 쓸 아이디와 비밀번호를 정해요</p>
-    <div class="flex flex-col gap-4">
+  <div class="flex min-h-svh flex-col bg-transparent px-6 pb-7 pt-14">
+    <h1 class="text-h2 text-ink">회원가입</h1>
+    <p class="mt-1 text-caption font-semibold text-primary-dark">1단계 / 3 · 계정</p>
+    <p class="sr-only">전체 3단계 중 1단계</p>
+    <p class="mt-2 text-body-sm text-muted">로그인에 쓸 아이디와 비밀번호를 정해요</p>
+
+    <form id="main" class="mt-8 flex flex-col gap-4" @submit.prevent="next">
       <UiField
         v-model="loginId"
         label="아이디"
@@ -53,6 +50,17 @@ function next() {
         autocomplete="new-password"
         hint="영문·숫자·기호를 섞으면 더 안전해요"
       />
+      <button type="submit" class="sr-only">다음</button>
+    </form>
+
+    <div class="flex-1" />
+
+    <div class="flex flex-col items-center gap-3.5">
+      <UiButton size="lg" block :disabled="!canNext" @click="next">다음</UiButton>
+      <p class="text-body-sm text-muted">
+        이미 계정이 있으신가요?
+        <RouterLink to="/login" class="font-bold text-primary-dark">로그인</RouterLink>
+      </p>
     </div>
-  </WizardChrome>
+  </div>
 </template>
