@@ -15,12 +15,6 @@ const { data: roadmap, loading, error, reload } = useResource(roadmapApi.getRoad
   requireAuth: true,
 })
 
-const headerSub = computed(() => {
-  const base = roadmap.value?.protectionEndYm
-  const end = roadmap.value?.planUntilYm
-  return base && end ? `보호종료 ${base} 기준 · ${end}까지 5년 계획` : '보호종료 후 5년 계획'
-})
-
 type Tab = 'all' | MilestoneCategory
 const TABS: { v: Tab; label: string }[] = [
   { v: 'all', label: '전체' },
@@ -79,7 +73,6 @@ function onTouchEnd(e: TouchEvent) {
     >
       <div>
         <h1 class="text-h3 text-ink">내 진단결과</h1>
-        <p class="mt-0.5 text-caption text-muted">{{ headerSub }}</p>
       </div>
       <button
         type="button"

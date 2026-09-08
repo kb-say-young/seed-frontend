@@ -6,7 +6,7 @@ import type { TokenResponse } from '@/shared/api/auth'
 export interface SignUpRequest {
   loginId: string // 영문·숫자 4~30자
   name: string // 이름 (20자 이하)
-  birthDate: string // 생년월일 "yyyyMMdd" (숫자 8자리)
+  birthDate: string // 생년월일 "yyyy-MM-dd" (BE LocalDate — ISO)
   phoneNumber: string // 휴대폰 번호 "010" + 숫자 8자리 (하이픈 제외)
 }
 

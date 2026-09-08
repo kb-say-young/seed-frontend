@@ -6,6 +6,7 @@ import UiButton from '@/shared/ui/UiButton.vue'
 import DateWheelField from '@/shared/components/DateWheelField.vue'
 import PhoneSegments from '@/shared/components/PhoneSegments.vue'
 import { userApi, ApiError } from '@/shared/api'
+import { setTokens } from '@/shared/lib/auth'
 import { state } from '@/features/diagnosis/model/store'
 
 // 1·2단계를 한 컴포넌트가 소유한다(?step 쿼리로 전환).
@@ -73,7 +74,7 @@ const canSubmit = computed(
 )
 
 // 아이디(1단계) + 이름·생년월일·전화번호(2단계)를 모두 입력한 뒤, 여기서 가입 요청을 한 번만 보낸다.
-// 백엔드 계약(POST /api/users/signup)은 loginId·name·birthDate(yyyyMMdd)·phoneNumber(010########) 를 받는다.
+// 백엔드 계약(POST /api/users/signup)은 loginId·name·birthDate(yyyy-MM-dd · LocalDate)·phoneNumber(010########) 를 받는다.
 // 비밀번호는 서버에 저장 경로가 없어(로그인은 아이디만) 화면 입력만 받고 전송하지 않는다.
 async function submit() {
   if (!canSubmit.value) return
@@ -83,10 +84,21 @@ async function submit() {
     const res = await userApi.signup({
       loginId: state.loginId,
       name: state.name.trim(),
-      birthDate: state.birth.replace(/\D/g, ''), // "1999.01.01" → "19990101"
+      birthDate: state.birth.trim().replace(/\./g, '-'), // "1999.01.01" → "1999-01-01" (BE LocalDate)
       phoneNumber: state.phone.replace(/\D/g, ''), // "010-1234-5678" → "01012345678"
     })
     state.loginId = res.loginId
+
+    // 가입 완료 = 로그인 상태로. 바로 이어지는 진단 정보 입력(POST /api/users/me/intake)이
+    // 인증을 요구하므로, 가입 직후 로그인 요청까지 보내 토큰을 확보한다.
+    // 로그인 호출이 실패해도 가입 자체는 성공 — /diagnosing 이 비로그인 상태로 degrade 한다.
+    try {
+      const tokens = await userApi.login(res.loginId)
+      setTokens(tokens.accessToken, tokens.refreshToken)
+    } catch (e) {
+      console.warn('[signup] 자동 로그인 실패', e)
+    }
+
     router.push('/signup/done')
   } catch (e) {
     if (e instanceof ApiError && e.status === 409) {
