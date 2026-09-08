@@ -24,6 +24,73 @@ export interface Milestone {
 
 export const BUCKETS = ['지금 · 앞으로 6개월', '6개월 ~ 1년', '1 ~ 3년', '3 ~ 5년 (자립수당 종료 대비)']
 
+// 진단결과 상단 요약 (Figma D1~D4 슬라이드 공통). 실제로는 diagnosis_summary 에서.
+export const ROADMAP_SUMMARY = {
+  securedMonths: 26, // 지금까지 확보한 자금으로 버틸 수 있는 개월 수
+  targetMonths: 60, // 자립수당 종료 시점
+  totalCost: 12_532_000, // 로드맵 전체 예상 비용
+  securedAmount: 8_000_000, // 현재 확보액
+}
+
+// 정책 상세 카탈로그 (Figma C2). 실제로는 policy 도메인에서.
+export interface PolicyDetail {
+  title: string
+  provider: string
+  status: 'eligible' | 'review' | 'ineligible'
+  amount: string
+  period: string
+  applyPeriod: string
+  eligibility: string[]
+  documents: string[]
+}
+
+export const POLICIES: Record<string, PolicyDetail> = {
+  청년내일저축계좌: {
+    title: '청년내일저축계좌',
+    provider: '보건복지부 · 자산형성',
+    status: 'eligible',
+    amount: '본인 10만원 저축 시 정부 30만원 매칭',
+    period: '3년 (36개월)',
+    applyPeriod: '2025.05.02 ~ 2025.05.21',
+    eligibility: [
+      '만 19~34세 (기준 중위소득 100% 이하)',
+      '보호종료아동·자립준비청년 우선 선정',
+      '근로·사업소득이 있는 재직자',
+      '가구 재산 도시 3.5억원 이하',
+    ],
+    documents: ['주민등록등본', '가족관계증명서', '재직증명서 또는 사업자등록증'],
+  },
+  국민내일배움카드: {
+    title: '국민내일배움카드',
+    provider: '고용노동부 · 직업교육',
+    status: 'eligible',
+    amount: '직업훈련비 최대 500만원 (5년간)',
+    period: '5년',
+    applyPeriod: '상시 신청',
+    eligibility: [
+      '만 18~75세 국민 (재직·구직·자영업자)',
+      '직업능력개발 훈련 참여 희망자',
+      '연 소득 기준 초과 시 자부담 비율 조정',
+    ],
+    documents: ['신분증', '개인정보 수집·이용 동의서'],
+  },
+  청년월세특별지원: {
+    title: '청년 월세 특별지원',
+    provider: '국토교통부 · 주거',
+    status: 'eligible',
+    amount: '최대 240만원 (월 20만원 · 12개월)',
+    period: '12개월',
+    applyPeriod: '2025.01.01 ~ 2025.12.31',
+    eligibility: [
+      '만 19~34세 무주택 청년',
+      '보호종료아동 및 자립준비청년 우선 지원',
+      '기준 중위소득 60% 이하',
+      '월세 60만원 및 보증금 5천만원 이하 거주자',
+    ],
+    documents: ['주민등록등본', '임대차계약서 사본', '월세 이체 증빙'],
+  },
+}
+
 export const MILESTONES: Milestone[] = [
   {
     id: 'temp-house',

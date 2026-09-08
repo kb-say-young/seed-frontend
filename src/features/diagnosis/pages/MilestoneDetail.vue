@@ -99,6 +99,7 @@ const remaining = computed(() =>
           :summary="m.policy.summary"
           :status="m.policy.status"
           :reason="m.policy.reason"
+          :to="`/roadmap/${m.id}/policy`"
         />
       </section>
 
