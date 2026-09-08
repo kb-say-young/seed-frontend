@@ -14,8 +14,10 @@ const props = withDefaults(
     hint?: string
     minYear?: number
     maxYear?: number
+    // 값이 없을 때 시트를 열면 오늘 날짜로 시작한다 (예: 보호종료 예정일)
+    defaultToday?: boolean
   }>(),
-  { minYear: 1990, maxYear: new Date().getFullYear() + 5 },
+  { minYear: 1990, maxYear: new Date().getFullYear() + 5, defaultToday: false },
 )
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 
@@ -49,10 +51,14 @@ watch(
 function openSheet(col: 'y' | 'm' | 'd') {
   const p = parts.value
   const now = new Date()
+  const clampYear = (v: number) => Math.min(props.maxYear, Math.max(props.minYear, v))
+  const fallback = props.defaultToday
+    ? { y: clampYear(now.getFullYear()), m: now.getMonth() + 1, d: now.getDate() }
+    : { y: clampYear(now.getFullYear() - 20), m: 1, d: 1 }
   draft.value = {
-    y: p?.y ?? Math.min(props.maxYear, Math.max(props.minYear, now.getFullYear() - 20)),
-    m: p?.m ?? 1,
-    d: p?.d ?? 1,
+    y: p?.y ?? fallback.y,
+    m: p?.m ?? fallback.m,
+    d: p?.d ?? fallback.d,
   }
   focusCol.value = col
   open.value = true

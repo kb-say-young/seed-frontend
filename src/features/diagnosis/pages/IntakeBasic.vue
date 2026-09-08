@@ -52,6 +52,7 @@ const household = computed({
         v-model="state.protectionEndDate"
         label="보호종료(예정)일"
         required
+        default-today
         :min-year="thisYear - 20"
         :max-year="thisYear + 5"
         hint="예정일도 괜찮아요. 연·월·일 칸을 눌러 선택해요"
