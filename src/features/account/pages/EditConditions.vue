@@ -6,6 +6,8 @@ import AppHeader from '@/shared/components/AppHeader.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { won } from '@/shared/lib/money'
 import { me, loadMe, ymdDotted } from '@/shared/lib/me'
+import { userApi } from '@/shared/api'
+import { useResource } from '@/shared/lib/useResource'
 
 const router = useRouter()
 
@@ -13,7 +15,17 @@ onMounted(() => {
   void loadMe()
 })
 
+// 목표는 별도 조회 (GET /api/users/me/goals)
+const { data: goals } = useResource(userApi.getGoals, { requireAuth: true })
+
 const BLANK = '미입력'
+
+const goalSummary = computed(() => {
+  const g = goals.value
+  if (!g || !g.length) return BLANK
+  const top = [...g].sort((a, b) => (a.priority ?? 99) - (b.priority ?? 99))[0]
+  return `${g.length}개 (${top.categoryName} 1순위)`
+})
 
 // GET /api/users/me 의 profile 파생값. 값이 없으면 "미입력".
 const rows = computed<[string, string][]>(() => {
@@ -31,6 +43,7 @@ const rows = computed<[string, string][]>(() => {
       '자립준비청년 신청',
       p?.isYouthSupport == null ? BLANK : p.isYouthSupport ? '신청함' : '아직 안 함',
     ],
+    ['목표 · 우선순위', goalSummary.value],
     ['현재 보유 자립 자금', p?.fixedBudget != null ? won(p.fixedBudget) : BLANK],
   ]
 })

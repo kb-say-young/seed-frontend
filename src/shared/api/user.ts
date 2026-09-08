@@ -76,3 +76,16 @@ export interface MeResponse {
 export function getMe(): Promise<MeResponse> {
   return http.get<MeResponse>('/api/users/me')
 }
+
+// --- 내 목표 목록 (GET /api/users/me/goals) — issue #23 ---
+export interface MeGoal {
+  parentCategoryId: string // "1"~"4" (주거/취·창업/생활/금융)
+  parentCategoryName: string
+  categoryId: string // "11"~"42"
+  categoryName: string
+  priority: number | null // 우선순위 (없으면 null)
+}
+
+export function getGoals(): Promise<MeGoal[]> {
+  return http.get<MeGoal[]>('/api/users/me/goals')
+}
