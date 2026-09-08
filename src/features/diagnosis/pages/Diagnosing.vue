@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import lottie from 'lottie-web/build/player/lottie_light'
+import type { AnimationItem } from 'lottie-web'
 import { userApi, ApiError } from '@/shared/api'
 import { isLoggedIn } from '@/shared/lib/auth'
 import { buildIntakePayload, IntakeIncompleteError } from '@/features/diagnosis/model/intake'
+import plantLoader from '@/features/diagnosis/plant-loader.json'
 
 const router = useRouter()
 const errorMsg = ref('')
+
+// 로드맵 생성(LLM 응답) 대기 로더 — LottieFiles "Animated plant loader".
+// 대기 화면이라 재생 중 반복하지만, prefers-reduced-motion 이면 정지 프레임만 보여준다.
+const box = ref<HTMLElement | null>(null)
+let anim: AnimationItem | null = null
 
 // 로그인 상태면 진단 정보를 서버에 제출한다.
 // ⚠️ 현재 BE 응답이 204라 diagnosisId 를 못 받음 → 로드맵 조회 연동은 BE #30/#33 확정 후.
@@ -28,8 +36,23 @@ let t: ReturnType<typeof setTimeout> | undefined
 onMounted(() => {
   void submit()
   t = setTimeout(() => router.replace('/roadmap'), 2200)
+
+  if (!box.value) return
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  anim = lottie.loadAnimation({
+    container: box.value,
+    renderer: 'svg',
+    loop: !reduce,
+    autoplay: !reduce,
+    animationData: plantLoader,
+  })
+  if (reduce) anim.goToAndStop(0, true)
 })
-onUnmounted(() => t && clearTimeout(t))
+onUnmounted(() => {
+  if (t) clearTimeout(t)
+  anim?.destroy()
+  anim = null
+})
 
 const steps = [
   { t: '받을 수 있는 지원 찾는 중', done: true },
@@ -40,15 +63,7 @@ const steps = [
 
 <template>
   <div class="flex min-h-svh flex-col items-center justify-center bg-transparent px-8 text-center">
-    <svg
-      class="size-[68px] motion-safe:animate-[spin_2.4s_linear_infinite]"
-      viewBox="0 0 72 72"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle cx="36" cy="36" r="29" stroke="var(--color-primary-bright)" stroke-width="3" />
-      <path d="M36 36 L36 7 A29 29 0 0 1 61.1 50.5 Z" fill="var(--color-primary-bright)" />
-    </svg>
+    <div ref="box" class="size-32" role="img" aria-label="로드맵을 그리는 중"></div>
 
     <h1 id="main" class="mt-5 text-h3 text-ink">로드맵을 그리고 있어요</h1>
     <p class="mt-2 text-body-sm leading-relaxed text-muted">
