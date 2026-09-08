@@ -3,19 +3,22 @@ import { ref, watch } from 'vue'
 import BottomSheet from '@/shared/components/BottomSheet.vue'
 import UiField from '@/shared/ui/UiField.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
+import type { SavingsCat } from '@/features/savings/model/savings'
 
-// Figma S3 "적립 내역 작성" — 카테고리 토글 + 항목 + 금액 입력.
-// (모은 돈 도메인 연동은 후속 이슈. 지금은 입력 UI + 로컬 검증.)
-const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{ close: []; submit: [value: { category: Cat; item: string; amount: number }] }>()
+// Figma S3 "적립 내역 작성" — 카테고리 토글 + 항목 + 금액.
+// (백엔드 적립 엔드포인트 전까지는 submit 이벤트만 — 상위에서 로컬 반영/알림)
+const props = defineProps<{ open: boolean; defaultCat?: SavingsCat }>()
+const emit = defineEmits<{
+  close: []
+  submit: [value: { category: SavingsCat; item: string; amount: number }]
+}>()
 
-type Cat = 'housing' | 'work'
-const CATS: { v: Cat; label: string }[] = [
+const CATS: { v: SavingsCat; label: string }[] = [
   { v: 'housing', label: '주거' },
   { v: 'work', label: '취·창업' },
 ]
 
-const category = ref<Cat>('housing')
+const category = ref<SavingsCat>(props.defaultCat ?? 'housing')
 const item = ref('')
 const amountText = ref('')
 
@@ -23,7 +26,7 @@ watch(
   () => props.open,
   (o) => {
     if (o) {
-      category.value = 'housing'
+      category.value = props.defaultCat ?? 'housing'
       item.value = ''
       amountText.value = ''
     }
@@ -67,12 +70,7 @@ function submit() {
         </div>
       </fieldset>
 
-      <UiField
-        v-model="item"
-        label="적립 항목"
-        placeholder="예: 월세 적립, 보증금 저축"
-      />
-
+      <UiField v-model="item" label="적립 항목" placeholder="예: 월세 적립, 보증금 저축" />
       <UiField
         :model-value="amountText"
         label="적립 금액"
@@ -82,12 +80,7 @@ function submit() {
         @update:model-value="onAmountInput"
       />
 
-      <UiButton
-        type="submit"
-        size="lg"
-        block
-        :disabled="!item.trim() || amount() <= 0"
-      >
+      <UiButton type="submit" size="lg" block :disabled="!item.trim() || amount() <= 0">
         확인
       </UiButton>
     </form>
