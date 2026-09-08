@@ -1,29 +1,30 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import AppHeader from '@/shared/components/AppHeader.vue'
+import UiButton from '@/shared/ui/UiButton.vue'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import ViewToggle from '@/shared/ui/ViewToggle.vue'
 import { won } from '@/shared/lib/money'
 import { ProgressMeter, BarChart } from '@/shared/ui/charts'
+import { expenseApi } from '@/shared/api'
+import type { BudgetCategory } from '@/shared/api/expense'
+import type { FundCategoryKey } from '@/shared/api/fund'
+import { useResource } from '@/shared/lib/useResource'
 
 // Figma "기록 · 예산 대비 지출 기록" 변형. 기본 기록(/tracking)과 토글로 전환.
-interface Cat {
-  label: string
-  budget: number
-  actual: number
-  dot: string
-  color: string
-  saving?: boolean
-}
-const cats: Cat[] = [
-  { label: '주거', budget: 600_000, actual: 520_000, dot: 'bg-cat-housing', color: 'var(--color-cat-housing)' },
-  { label: '생활', budget: 375_000, actual: 410_000, dot: 'bg-cat-living', color: 'var(--color-cat-living)' },
-  { label: '취·창업', budget: 300_000, actual: 180_000, dot: 'bg-cat-work', color: 'var(--color-cat-work)' },
-  { label: '저축', budget: 225_000, actual: 130_000, dot: 'bg-cat-finance', color: 'var(--color-cat-finance)', saving: true },
-]
+const { data: budget, loading, error, reload } = useResource(() => expenseApi.getBudgets(), {
+  requireAuth: true,
+})
 
-function meta(c: Cat) {
-  const pct = Math.round((c.actual / c.budget) * 100)
+const CAT_STYLE: Record<FundCategoryKey, { dot: string; color: string }> = {
+  housing: { dot: 'bg-cat-housing', color: 'var(--color-cat-housing)' },
+  living: { dot: 'bg-cat-living', color: 'var(--color-cat-living)' },
+  work: { dot: 'bg-cat-work', color: 'var(--color-cat-work)' },
+  saving: { dot: 'bg-cat-finance', color: 'var(--color-cat-finance)' },
+}
+
+function meta(c: BudgetCategory) {
+  const pct = c.budget ? Math.round((c.actual / c.budget) * 100) : 0
   if (c.saving) {
     return pct >= 100
       ? { pct, text: '목표 달성', badge: 'bg-primary-tint text-primary-dark', bar: 'var(--color-primary)', pctCls: 'text-primary-dark' }
@@ -36,7 +37,14 @@ function meta(c: Cat) {
   return { pct, text: '여유 있음', badge: 'bg-primary-tint text-primary-dark', bar: 'var(--color-primary)', pctCls: 'text-muted' }
 }
 
-const rows = computed(() => cats.map((c) => ({ ...c, m: meta(c) })))
+const rows = computed(() =>
+  (budget.value?.categories ?? []).map((c) => ({
+    ...c,
+    style: CAT_STYLE[c.key],
+    m: meta(c),
+  })),
+)
+const planRoom = computed(() => (budget.value ? budget.value.plan - budget.value.spent : 0))
 </script>
 
 <template>
@@ -51,60 +59,68 @@ const rows = computed(() => cats.map((c) => ({ ...c, m: meta(c) })))
         active="예산 대비"
       />
 
-      <section class="glass rounded-2xl p-4">
-        <div class="flex items-end justify-between">
-          <span class="text-body-sm text-muted">이번 달 지출</span>
-          <span class="tabular text-h3 font-bold text-ink">{{ won(1_240_000) }}</span>
-        </div>
-        <p class="mt-1 text-caption text-muted">계획 1,300,000원 · 아직 여유 있어요</p>
-        <BarChart
-          class="mt-4"
-          :height="116"
-          :data="cats.map((c) => ({ label: c.label, value: c.actual, plan: c.budget, color: c.color }))"
-          :format="(n) => `${Math.round(n / 10000)}만`"
-          caption="막대 = 실제 지출 · 가로선 = AI 추천 예산"
-        />
-      </section>
+      <p v-if="loading" class="py-16 text-center text-body-sm text-muted">불러오는 중…</p>
 
-      <h2 class="text-label text-ink">예산 대비 지출 기록</h2>
+      <div v-else-if="error || !budget" class="py-16 text-center">
+        <p class="text-body-sm text-muted">{{ error ?? '예산 정보를 불러오지 못했어요.' }}</p>
+        <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
+      </div>
 
-      <section
-        v-for="r in rows"
-        :key="r.label"
-        class="glass rounded-2xl p-4"
-      >
-        <div class="flex items-center justify-between">
-          <span class="flex items-center gap-2 text-label font-bold text-ink">
-            <span class="size-2.5 rounded-full" :class="r.dot" aria-hidden="true" />{{ r.label }}
-          </span>
-          <span class="rounded-full px-2.5 py-1 text-caption font-semibold" :class="r.m.badge">
-            {{ r.m.text }}
-          </span>
-        </div>
-
-        <div class="mt-3 flex items-end justify-between">
-          <div>
-            <p class="text-caption text-muted">AI 추천 예산</p>
-            <p class="tabular text-body-sm font-semibold text-body">{{ won(r.budget) }}</p>
+      <template v-else>
+        <section class="glass rounded-2xl p-4">
+          <div class="flex items-end justify-between">
+            <span class="text-body-sm text-muted">이번 달 지출</span>
+            <span class="tabular text-h3 font-bold text-ink">{{ won(budget.spent) }}</span>
           </div>
-          <div class="text-right">
-            <p class="text-caption text-muted">실제 지출</p>
-            <p class="tabular text-body-sm font-bold text-ink">{{ won(r.actual) }}</p>
-          </div>
-        </div>
+          <p class="mt-1 text-caption text-muted">
+            계획 {{ won(budget.plan) }} ·
+            {{ planRoom >= 0 ? '아직 여유 있어요' : `${won(-planRoom)} 초과` }}
+          </p>
+          <BarChart
+            class="mt-4"
+            :height="116"
+            :data="rows.map((c) => ({ label: c.label, value: c.actual, plan: c.budget, color: c.style.color }))"
+            :format="(n) => `${Math.round(n / 10000)}만`"
+            caption="막대 = 실제 지출 · 가로선 = AI 추천 예산"
+          />
+        </section>
 
-        <ProgressMeter
-          class="mt-2.5"
-          :value="r.actual"
-          :max="r.budget"
-          :color="r.m.bar"
-          :over="!r.saving"
-          :aria-label="`${r.label} 실제 지출 ${won(r.actual)} · 예산 ${won(r.budget)}의 ${r.m.pct}퍼센트 (${r.m.text})`"
-        />
-        <p class="tabular mt-1 text-right text-caption font-semibold" :class="r.m.pctCls">
-          {{ r.m.pct }}%
-        </p>
-      </section>
+        <h2 class="text-label text-ink">예산 대비 지출 기록</h2>
+
+        <section v-for="r in rows" :key="r.key" class="glass rounded-2xl p-4">
+          <div class="flex items-center justify-between">
+            <span class="flex items-center gap-2 text-label font-bold text-ink">
+              <span class="size-2.5 rounded-full" :class="r.style.dot" aria-hidden="true" />{{ r.label }}
+            </span>
+            <span class="rounded-full px-2.5 py-1 text-caption font-semibold" :class="r.m.badge">
+              {{ r.m.text }}
+            </span>
+          </div>
+
+          <div class="mt-3 flex items-end justify-between">
+            <div>
+              <p class="text-caption text-muted">AI 추천 예산</p>
+              <p class="tabular text-body-sm font-semibold text-body">{{ won(r.budget) }}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-caption text-muted">실제 지출</p>
+              <p class="tabular text-body-sm font-bold text-ink">{{ won(r.actual) }}</p>
+            </div>
+          </div>
+
+          <ProgressMeter
+            class="mt-2.5"
+            :value="r.actual"
+            :max="r.budget || 1"
+            :color="r.m.bar"
+            :over="!r.saving"
+            :aria-label="`${r.label} 실제 지출 ${won(r.actual)} · 예산 ${won(r.budget)}의 ${r.m.pct}퍼센트 (${r.m.text})`"
+          />
+          <p class="tabular mt-1 text-right text-caption font-semibold" :class="r.m.pctCls">
+            {{ r.m.pct }}%
+          </p>
+        </section>
+      </template>
     </main>
     <FloatingNav />
   </div>
