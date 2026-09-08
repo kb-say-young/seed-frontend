@@ -2,12 +2,23 @@
 // TODO(#14): GET /api/diagnoses/{diagnosisId}/recommendations 로 교체.
 //   차단: me/intake 응답이 204라 diagnosisId 를 못 받음 → BE #30/#33 확정 대기.
 //   현재는 shared/lib/roadmap.ts 목데이터 사용.
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Share2, ChevronRight } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import MilestoneSlideCard from '@/features/diagnosis/components/MilestoneSlideCard.vue'
 import { BUCKETS, MILESTONES, ROADMAP_SUMMARY } from '@/shared/lib/roadmap'
 import { manwon } from '@/shared/lib/money'
+import { me, loadMe, ymShort, ymPlusYears } from '@/shared/lib/me'
+
+onMounted(() => {
+  void loadMe()
+})
+// 보호종료일 기준 5년 계획 문구. 데이터 없으면 중립 문구.
+const headerSub = computed(() => {
+  const base = ymShort(me.data?.profile?.protectionEndDate)
+  const end = ymPlusYears(me.data?.profile?.protectionEndDate, 5)
+  return base && end ? `보호종료 ${base} 기준 · ${end}까지 5년 계획` : '보호종료 후 5년 계획'
+})
 
 // Reading this as: 진단결과 페이지네이션 슬라이드 for 취약계층 청소년, trust-first, DENSITY 3.
 
@@ -62,7 +73,7 @@ function onTouchEnd(e: TouchEvent) {
     >
       <div>
         <h1 class="text-h3 text-ink">내 진단결과</h1>
-        <p class="mt-0.5 text-caption text-muted">보호종료 2024.02 기준 · 2029.02까지 5년 계획</p>
+        <p class="mt-0.5 text-caption text-muted">{{ headerSub }}</p>
       </div>
       <button
         type="button"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, computed } from 'vue'
 import { Bell, Check } from 'lucide-vue-next'
 import SustainMeter from '@/shared/components/SustainMeter.vue'
 import MilestoneCard from '@/shared/components/MilestoneCard.vue'
@@ -6,6 +7,12 @@ import StatCard from '@/shared/ui/StatCard.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import { MILESTONES } from '@/shared/lib/roadmap'
+import { me, loadMe } from '@/shared/lib/me'
+
+onMounted(() => {
+  void loadMe()
+})
+const greetingName = computed(() => me.data?.name?.trim() || '회원')
 
 const next = MILESTONES.find((m) => m.id === 'emergency-fund')!
 const tasks = [
@@ -22,7 +29,7 @@ const tasks = [
       style="padding-top: max(0.75rem, env(safe-area-inset-top))"
     >
       <div>
-        <h1 class="text-h2 text-ink">안녕하세요, 지현님</h1>
+        <h1 class="text-h2 text-ink">안녕하세요, {{ greetingName }}님</h1>
         <p class="mt-0.5 text-body-sm text-muted">자립수당 종료까지 51개월 · 한 걸음씩 가요</p>
       </div>
       <button type="button" class="tap-target -mr-2 flex items-center justify-center rounded-full text-muted" aria-label="알림">

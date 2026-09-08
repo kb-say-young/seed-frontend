@@ -5,6 +5,7 @@ import UiField from '@/shared/ui/UiField.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { userApi, ApiError } from '@/shared/api'
 import { setTokens } from '@/shared/lib/auth'
+import { resetMe, loadMe } from '@/shared/lib/me'
 import { state } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
@@ -26,6 +27,8 @@ async function submit() {
     const tokens = await userApi.login(loginId.value.trim())
     setTokens(tokens.accessToken, tokens.refreshToken)
     state.loginId = loginId.value.trim()
+    resetMe()
+    void loadMe(true)
     router.push('/roadmap')
   } catch (e) {
     error.value =

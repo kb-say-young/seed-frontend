@@ -1,10 +1,27 @@
 <script setup lang="ts">
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ChevronRight } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import { authApi } from '@/shared/api'
+import { me, loadMe, resetMe, ymShort } from '@/shared/lib/me'
 
 const router = useRouter()
+
+onMounted(() => {
+  void loadMe()
+})
+
+const displayName = computed(() => me.data?.name?.trim() || '회원')
+const initial = computed(() => displayName.value.charAt(0))
+const subtitle = computed(() => {
+  if (me.loading) return '불러오는 중…'
+  const p = me.data?.profile
+  if (!p) return '진단 정보 입력 전'
+  const ym = ymShort(p.protectionEndDate)
+  const type = p.isYouthSupport ? '자립준비청년' : '보호 종료 예정'
+  return ym ? `보호종료 ${ym} · ${type}` : type
+})
 
 // 이동 가능한 메뉴
 const menu = [
@@ -19,6 +36,7 @@ async function logout() {
   try {
     await authApi.logout()
   } finally {
+    resetMe()
     router.push('/login')
   }
 }
@@ -34,11 +52,11 @@ async function logout() {
       <section class="flex items-center glass gap-3.5 rounded-2xl p-4">
         <span
           class="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-tint text-h3 font-bold text-primary-dark"
-          >지</span
+          >{{ initial }}</span
         >
         <span>
-          <span class="block text-label font-bold text-ink">지현님</span>
-          <span class="block text-caption text-muted">보호종료 2024.02 · 자립준비청년</span>
+          <span class="block text-label font-bold text-ink">{{ displayName }}님</span>
+          <span class="block text-caption text-muted">{{ subtitle }}</span>
         </span>
       </section>
 
