@@ -172,7 +172,7 @@ async function submit() {
           label="생년월일"
           required
           :min-year="thisYear - 60"
-          :max-year="thisYear - 10"
+          :max-year="thisYear"
         />
         <PhoneSegments v-model="state.phone" label="전화번호" required />
         <button type="submit" class="sr-only">다음</button>
