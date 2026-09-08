@@ -66,9 +66,13 @@ async function submit() {
 <template>
   <div class="flex min-h-svh flex-col bg-transparent px-6 pb-7 pt-14">
     <h1 class="text-h2 text-ink">회원가입</h1>
-    <p class="mt-1 text-caption font-semibold text-primary-dark">2단계 / 3 · 인적 사항</p>
-    <p class="sr-only">전체 3단계 중 2단계</p>
-    <p class="mt-2 text-body-sm text-muted">지원 자격과 지원금 계산에 사용해요</p>
+    <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-primary-tint" aria-hidden="true">
+      <div
+        class="bar-fill h-full rounded-full"
+        style="width: 66.666%; background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary-bright) 40%, white), var(--color-primary-bright))"
+      />
+    </div>
+    <p class="sr-only">전체 3단계 중 2단계 · 인적 사항</p>
 
     <form id="main" class="mt-8 flex flex-col gap-4" @submit.prevent="submit">
       <p v-if="error" role="alert" class="text-body-sm text-danger">{{ error }}</p>
@@ -115,3 +119,20 @@ async function submit() {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 진입 시 이전 단계(33%) → 현재 단계(67%) 로 이어서 채워지는 애니메이션. */
+.bar-fill {
+  animation: bar-fill 360ms var(--ease-out-soft, ease-out) both;
+}
+@keyframes bar-fill {
+  from {
+    width: 33.333%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill {
+    animation: none;
+  }
+}
+</style>

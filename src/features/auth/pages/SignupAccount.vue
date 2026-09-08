@@ -27,9 +27,13 @@ function next() {
 <template>
   <div class="flex min-h-svh flex-col bg-transparent px-6 pb-7 pt-14">
     <h1 class="text-h2 text-ink">회원가입</h1>
-    <p class="mt-1 text-caption font-semibold text-primary-dark">1단계 / 3 · 계정</p>
-    <p class="sr-only">전체 3단계 중 1단계</p>
-    <p class="mt-2 text-body-sm text-muted">로그인에 쓸 아이디와 비밀번호를 정해요</p>
+    <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-primary-tint" aria-hidden="true">
+      <div
+        class="bar-fill h-full rounded-full"
+        style="width: 33.333%; background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary-bright) 40%, white), var(--color-primary-bright))"
+      />
+    </div>
+    <p class="sr-only">전체 3단계 중 1단계 · 계정</p>
 
     <form id="main" class="mt-8 flex flex-col gap-4" @submit.prevent="next">
       <UiField
@@ -64,3 +68,20 @@ function next() {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* 진입 시 0 → 현재 단계 폭까지 한 번 채워지는 애니메이션. */
+.bar-fill {
+  animation: bar-fill 360ms var(--ease-out-soft, ease-out) both;
+}
+@keyframes bar-fill {
+  from {
+    width: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar-fill {
+    animation: none;
+  }
+}
+</style>
