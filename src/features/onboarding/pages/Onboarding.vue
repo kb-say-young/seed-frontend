@@ -2,25 +2,16 @@
 import { useRouter } from 'vue-router'
 import UiButton from '@/shared/ui/UiButton.vue'
 
-// Figma "온보딩" — 진행 점 + 건너뛰기(좌측 그룹) → 성장 경로 일러스트 → 카피 → 하단 CTA.
+// Figma "온보딩" — 진행 점 → 로고 → 카피 → 하단 CTA.
 const router = useRouter()
 </script>
 
 <template>
   <div class="flex min-h-svh flex-col bg-transparent px-6 pb-7 pt-5">
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5" aria-hidden="true">
-        <span class="h-1.5 w-6 rounded-full bg-primary-bright" />
-        <span class="h-1.5 w-1.5 rounded-full bg-border" />
-        <span class="h-1.5 w-1.5 rounded-full bg-border" />
-      </div>
-      <button
-        type="button"
-        class="tap-target text-body-sm font-medium text-muted"
-        @click="router.push('/landing')"
-      >
-        건너뛰기
-      </button>
+    <div class="flex items-center gap-1.5" aria-hidden="true">
+      <span class="h-1.5 w-6 rounded-full bg-primary-bright" />
+      <span class="h-1.5 w-1.5 rounded-full bg-border" />
+      <span class="h-1.5 w-1.5 rounded-full bg-border" />
     </div>
 
     <div class="mt-8 flex flex-col items-center text-center">
