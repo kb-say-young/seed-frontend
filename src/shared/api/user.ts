@@ -2,13 +2,21 @@
 import { http } from '@/shared/api/http'
 import type { TokenResponse } from '@/shared/api/auth'
 
+// 회원가입 요청 — 백엔드 `SignUpRequest` 계약. 1·2단계 입력을 모아 한 번에 보낸다.
+export interface SignUpRequest {
+  loginId: string // 영문·숫자 4~30자
+  name: string // 이름 (20자 이하)
+  birthDate: string // 생년월일 "yyyyMMdd" (숫자 8자리)
+  phoneNumber: string // 휴대폰 번호 "010" + 숫자 8자리 (하이픈 제외)
+}
+
 export interface SignUpResponse {
   id: number
   loginId: string
 }
 
-export function signup(loginId: string): Promise<SignUpResponse> {
-  return http.post<SignUpResponse>('/api/users/signup', { loginId }, { auth: false })
+export function signup(body: SignUpRequest): Promise<SignUpResponse> {
+  return http.post<SignUpResponse>('/api/users/signup', body, { auth: false })
 }
 
 export function login(loginId: string): Promise<TokenResponse> {
