@@ -2,19 +2,13 @@
 import { useRouter } from 'vue-router'
 import UiButton from '@/shared/ui/UiButton.vue'
 
-// Figma "온보딩" — 진행 점 → 로고 → 카피 → 하단 CTA.
+// Figma "온보딩" — 로고 → 카피 → 하단 CTA. (단일 화면)
 const router = useRouter()
 </script>
 
 <template>
   <div class="flex min-h-svh flex-col bg-transparent px-6 pb-7 pt-5">
-    <div class="flex items-center gap-1.5" aria-hidden="true">
-      <span class="h-1.5 w-6 rounded-full bg-primary-bright" />
-      <span class="h-1.5 w-1.5 rounded-full bg-border" />
-      <span class="h-1.5 w-1.5 rounded-full bg-border" />
-    </div>
-
-    <div class="mt-8 flex flex-col items-center text-center">
+    <div class="mt-10 flex flex-col items-center text-center">
       <div class="reveal reveal-1 glass-tint grid w-full max-w-[320px] place-items-center rounded-3xl px-6 py-8">
         <img
           src="/sprout.png"
