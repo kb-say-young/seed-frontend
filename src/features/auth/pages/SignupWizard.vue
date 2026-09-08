@@ -6,6 +6,7 @@ import UiButton from '@/shared/ui/UiButton.vue'
 import DateWheelField from '@/shared/components/DateWheelField.vue'
 import PhoneSegments from '@/shared/components/PhoneSegments.vue'
 import { userApi, ApiError } from '@/shared/api'
+import { setTokens } from '@/shared/lib/auth'
 import { state } from '@/features/diagnosis/model/store'
 
 // 1·2단계를 한 컴포넌트가 소유한다(?step 쿼리로 전환).
@@ -87,6 +88,17 @@ async function submit() {
       phoneNumber: state.phone.replace(/\D/g, ''), // "010-1234-5678" → "01012345678"
     })
     state.loginId = res.loginId
+
+    // 가입 완료 = 로그인 상태로. 바로 이어지는 진단 정보 입력(POST /api/users/me/intake)이
+    // 인증을 요구하므로, 가입 직후 로그인 요청까지 보내 토큰을 확보한다.
+    // 로그인 호출이 실패해도 가입 자체는 성공 — /diagnosing 이 비로그인 상태로 degrade 한다.
+    try {
+      const tokens = await userApi.login(res.loginId)
+      setTokens(tokens.accessToken, tokens.refreshToken)
+    } catch (e) {
+      console.warn('[signup] 자동 로그인 실패', e)
+    }
+
     router.push('/signup/done')
   } catch (e) {
     if (e instanceof ApiError && e.status === 409) {

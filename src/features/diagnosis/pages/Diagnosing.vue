@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import lottie from 'lottie-web/build/player/lottie_light'
 import type { AnimationItem } from 'lottie-web'
@@ -24,6 +24,16 @@ const slow = ref(false) // 예상보다 오래 걸릴 때만 노출하는 안내
 // 대기 화면이라 반복 재생하지만, prefers-reduced-motion 이면 정지 프레임만 보여준다.
 const box = ref<HTMLElement | null>(null)
 let anim: AnimationItem | null = null
+
+const reduceMotion =
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+// 대기 문구 — 한 줄씩 왼쪽에서 나와 오른쪽으로 사라지며 순환.
+// reduced-motion 이면 순환하지 않고 세 줄을 정적으로 보여준다.
+const STEP_LABELS = ['받을 수 있는 지원 찾는 중', '시점별 타임라인 배치 중', '자금 배분 계산 중']
+const STEP_MS = 2400
+const stepIdx = ref(0)
+let stepTimer: ReturnType<typeof setInterval> | undefined
 
 const MIN_VISIBLE_MS = 1200 // 응답이 즉시 와도 로더가 깜빡이지 않도록 최소 노출
 const ROADMAP_TRIES = 4 // 로드맵 조회 재시도 — LLM 처리 지연 대비
@@ -77,9 +87,12 @@ async function run() {
     if (!cancelled) router.replace('/roadmap')
   } catch (e) {
     if (cancelled) return
-    if (e instanceof IntakeIncompleteError) errorMsg.value = e.message
-    else if (e instanceof ApiError) errorMsg.value = e.message
-    else errorMsg.value = '진단 결과를 만드는 중 문제가 생겼어요.'
+    // 입력이 덜 됐으면(직접 진입·새로고침 등) 재시도는 무의미 — 입력 화면부터.
+    if (e instanceof IntakeIncompleteError) {
+      router.replace('/intake')
+      return
+    }
+    errorMsg.value = e instanceof ApiError ? e.message : '진단 결과를 만드는 중 문제가 생겼어요.'
     phase.value = 'error'
     console.warn('[diagnosing]', e)
   } finally {
@@ -96,31 +109,30 @@ function retry() {
 onMounted(() => {
   void run()
 
+  // 대기 문구 순환 — 애니메이션 주기와 교체 주기를 STEP_MS 로 맞춘다.
+  if (!reduceMotion) {
+    stepTimer = setInterval(() => {
+      stepIdx.value = (stepIdx.value + 1) % STEP_LABELS.length
+    }, STEP_MS)
+  }
+
   if (!box.value) return
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   anim = lottie.loadAnimation({
     container: box.value,
     renderer: 'svg',
-    loop: !reduce,
-    autoplay: !reduce,
+    loop: !reduceMotion,
+    autoplay: !reduceMotion,
     animationData: plantLoader,
   })
-  if (reduce) anim.goToAndStop(0, true)
+  if (reduceMotion) anim.goToAndStop(0, true)
 })
 onUnmounted(() => {
   cancelled = true
   clearSlowTimer()
+  if (stepTimer) clearInterval(stepTimer)
   anim?.destroy()
   anim = null
 })
-
-// 제출이 끝나면 첫 단계 완료로 표시. 이후 단계는 로드맵 도착 직전까지 진행 중.
-const submitted = computed(() => phase.value === 'generating')
-const steps = computed(() => [
-  { t: '받을 수 있는 지원 찾는 중', done: submitted.value },
-  { t: '시점별 타임라인 배치 중', done: false },
-  { t: '자금 배분 계산 중', done: false },
-])
 </script>
 
 <template>
@@ -133,14 +145,25 @@ const steps = computed(() => [
         입력한 조건으로 보호종료 후 5년<br />주거·취업·자금 계획을 만드는 중이에요.
       </p>
 
-      <ul class="mt-6 flex flex-col gap-2.5">
-        <li v-for="s in steps" :key="s.t" class="flex items-center gap-2.5">
-          <span
-            class="size-4 rounded-full"
-            :class="s.done ? 'bg-primary-bright' : 'bg-border'"
-            aria-hidden="true"
-          />
-          <span class="text-body-sm" :class="s.done ? 'text-ink' : 'text-text-muted'">{{ s.t }}</span>
+      <!-- 대기 문구: 한 줄씩 왼→우로 순환. reduced-motion 이면 세 줄 정적 표시. -->
+      <div
+        v-if="!reduceMotion"
+        class="mt-6 flex h-7 items-center justify-center overflow-hidden"
+        aria-hidden="true"
+      >
+        <div
+          :key="stepIdx"
+          class="cyc flex items-center gap-2.5"
+          :style="{ animationDuration: STEP_MS + 'ms' }"
+        >
+          <span class="size-2.5 rounded-full bg-primary-bright" />
+          <span class="text-body-sm text-ink">{{ STEP_LABELS[stepIdx] }}</span>
+        </div>
+      </div>
+      <ul v-else class="mt-6 flex flex-col gap-2.5" aria-hidden="true">
+        <li v-for="t in STEP_LABELS" :key="t" class="flex items-center gap-2.5">
+          <span class="size-4 rounded-full bg-border" />
+          <span class="text-body-sm text-text-muted">{{ t }}</span>
         </li>
       </ul>
 
@@ -164,3 +187,38 @@ const steps = computed(() => [
     </template>
   </div>
 </template>
+
+<style scoped>
+/* 대기 문구 한 줄: 왼쪽(-16px)에서 나와 잠시 머물고 오른쪽(+16px)으로 사라진다.
+   :key 리마운트로 문구가 바뀔 때마다 재생. animation-duration 은 STEP_MS 로 인라인 지정. */
+.cyc {
+  animation-name: cyc;
+  animation-timing-function: var(--ease-out-soft, ease-out);
+  animation-fill-mode: both;
+}
+@keyframes cyc {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cyc {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+</style>
