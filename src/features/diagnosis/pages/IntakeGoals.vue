@@ -7,6 +7,7 @@ import UiChip from '@/shared/ui/UiChip.vue'
 import UiField from '@/shared/ui/UiField.vue'
 import RegionSelect from '@/shared/components/RegionSelect.vue'
 import { state, GOAL_CATALOG, CATEGORY_DOT } from '@/features/diagnosis/model/store'
+import { manwon } from '@/shared/lib/money'
 
 const router = useRouter()
 const open = ref<string | null>('1')
@@ -26,9 +27,25 @@ const amountStr = (parentId: string) => {
   const g = state.goals.find((x) => x.parentId === parentId)
   return g?.targetAmount == null ? '' : String(Math.round(g.targetAmount / 10000))
 }
+// 값이 있으면 라벨의 "(만원)" 자리에 입력 금액을 넣어 "(50만원)" 처럼 보여준다.
+const amountLabel = (parentId: string) => {
+  const g = state.goals.find((x) => x.parentId === parentId)
+  return g?.targetAmount ? `희망 금액 (${manwon(g.targetAmount)})` : '희망 금액 (만원)'
+}
+// 접힌 카드 머리글에 표시할 요약 — "전세 · 50만원" (금액 없으면 세부 목표 이름만).
+const pickedSummary = (parentId: string) => {
+  const subId = pickedSubId(parentId)
+  if (!subId) return null
+  const label = GOAL_CATALOG.find((c) => c.parentId === parentId)?.subs.find((s) => s.id === subId)
+    ?.label
+  const g = state.goals.find((x) => x.parentId === parentId)
+  return g?.targetAmount ? `${label} · ${manwon(g.targetAmount)}` : label
+}
 const setAmount = (parentId: string, v: string) => {
   const g = state.goals.find((x) => x.parentId === parentId)
-  if (g) g.targetAmount = (Number(v.replace(/\D/g, '')) || 0) * 10000
+  if (!g) return
+  const digits = v.replace(/\D/g, '').replace(/^0+(?=\d)/, '') // 숫자만 · 앞자리 0 제거
+  g.targetAmount = digits ? Number(digits) * 10000 : undefined
 }
 const regionCode = (parentId: string) => state.goals.find((x) => x.parentId === parentId)?.regionCode ?? ''
 const setRegionCode = (parentId: string, code: string) => {
@@ -75,11 +92,7 @@ const canNext = computed(() => state.goals.length > 0)
               class="mt-0.5 block text-caption"
               :class="pickedSubId(c.parentId) ? 'font-semibold text-primary-dark' : 'text-muted'"
             >
-              {{
-                pickedSubId(c.parentId)
-                  ? c.subs.find((s) => s.id === pickedSubId(c.parentId))?.label
-                  : c.hint
-              }}
+              {{ pickedSubId(c.parentId) ? pickedSummary(c.parentId) : c.hint }}
             </span>
           </span>
           <ChevronDown
@@ -103,9 +116,10 @@ const canNext = computed(() => state.goals.length > 0)
           <div v-if="pickedSubId(c.parentId)" class="mt-4 flex flex-col gap-4">
             <UiField
               :model-value="amountStr(c.parentId)"
-              label="희망 금액 (만원)"
+              :label="amountLabel(c.parentId)"
               placeholder="0"
               inputmode="numeric"
+              numeric-only
               @update:model-value="setAmount(c.parentId, $event)"
             />
             <RegionSelect
