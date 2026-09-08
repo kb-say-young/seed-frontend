@@ -4,6 +4,19 @@ import { reactive } from 'vue'
 // 필드는 백엔드 계약(POST /api/users/me/intake · user_profile snake_case)에 대응한다.
 // (우선순위 단계는 제거됨 — issue #8)
 
+// 학력 드롭다운 — 문자열 그대로 education_level 값으로 전송한다(별도 코드 매핑 없음).
+export const EDUCATION_LEVELS = [
+  '고졸미만',
+  '고교재학',
+  '고졸예정',
+  '고교졸업',
+  '대학재학',
+  '대졸예정',
+  '대학졸업',
+  '석박사',
+  '기타',
+] as const
+
 export interface GoalPick {
   parentId: string // "1"~"4"  (categories.parent_category_id)
   categoryId: string // "11"~"42" (categories.category_id)
@@ -24,6 +37,7 @@ export interface State {
   isYouthSupportApplied: boolean | null // is_youth_support
   isBasicRecipient: boolean | null // is_basic_recipient
   regionCode: string // region_code (시군구 5자리)
+  educationLevel: string // education_level — 드롭다운 메뉴 문자열 그대로 전송
   householdSize: number | null // household_size
 
   // N2 소득·예산
@@ -43,6 +57,7 @@ export const state = reactive<State>({
   isYouthSupportApplied: null,
   isBasicRecipient: null,
   regionCode: '',
+  educationLevel: '',
   householdSize: null,
   monthlyIncome: null,
   cdaBalance: null,

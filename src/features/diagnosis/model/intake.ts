@@ -31,6 +31,7 @@ export function buildIntakePayload(): IntakePayload {
     isYouthSupportApplied,
     isBasicRecipient,
     regionCode,
+    educationLevel,
     householdSize,
     monthlyIncome,
     cdaBalance,
@@ -42,6 +43,7 @@ export function buildIntakePayload(): IntakePayload {
     isYouthSupportApplied == null ||
     isBasicRecipient == null ||
     !regionCode ||
+    !educationLevel ||
     householdSize == null ||
     monthlyIncome == null ||
     cdaBalance == null ||
@@ -55,6 +57,7 @@ export function buildIntakePayload(): IntakePayload {
     is_youth_support: isYouthSupportApplied,
     fixed_budget: cdaBalance,
     region_code: regionCode,
+    education: educationLevel,
     income: monthlyIncome,
     is_basic_recipient: isBasicRecipient,
     household_size: householdSize,

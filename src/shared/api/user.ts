@@ -32,6 +32,7 @@ export interface UserProfilePayload {
   fixed_budget: number // 디딤씨앗통장(CDA) 잔액(원)
   region_code: string // 시/군/구 5자리
   region_display?: string
+  education: string // 학력 드롭다운 메뉴 문자열 그대로("고졸미만" 등, 코드 매핑 없음). BE 필드명 그대로(JsonProperty 없음)
   income: number // 월 평균 소득(원)
   is_basic_recipient: boolean
   household_size: number
