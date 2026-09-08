@@ -12,6 +12,8 @@ const props = withDefaults(
     required?: boolean
     type?: 'text' | 'password' | 'tel' | 'email'
     inputmode?: 'text' | 'numeric' | 'decimal'
+    // 숫자(0-9)만 입력 허용 — 입력 즉시 그 외 문자를 제거한다. (inputmode 는 키패드 힌트일 뿐)
+    numericOnly?: boolean
     suffix?: string
     maxlength?: number
     autocomplete?: string
@@ -19,6 +21,19 @@ const props = withDefaults(
   { type: 'text' },
 )
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+
+function onInput(e: Event) {
+  const el = e.target as HTMLInputElement
+  if (props.numericOnly) {
+    const cleaned = el.value.replace(/[^\d]/g, '')
+    // DOM 값을 즉시 되돌린다 — 제거 후 값이 modelValue 와 같아 Vue 가 패치를 건너뛰어도
+    // 화면에 이물 문자가 남지 않게.
+    if (cleaned !== el.value) el.value = cleaned
+    emit('update:modelValue', cleaned)
+    return
+  }
+  emit('update:modelValue', el.value)
+}
 
 const uid = useId()
 const describedby = computed(() =>
@@ -52,7 +67,7 @@ const describedby = computed(() =>
           error ? 'border-danger' : 'focus:border-primary',
           suffix ? 'pr-12' : '',
         ]"
-        @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+        @input="onInput"
       />
       <span
         v-if="suffix"

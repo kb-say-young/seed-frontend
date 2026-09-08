@@ -41,7 +41,7 @@ watch(targetWidth, (w) => {
 
 // --- 1단계: 계정 ---
 const loginId = ref(state.loginId)
-// 비밀번호: 화면에는 두되 백엔드로 보내지 않는다 (현재 계약은 아이디만).
+// 비밀번호: 화면에는 두되 백엔드로 보내지 않는다 (로그인은 아이디만 — 저장 경로 없음).
 const pw = ref('')
 // 아이디 중복(409)은 2단계 제출 때 알 수 있지만, 아이디 필드가 여기 있으므로
 // 이 필드의 에러로 되돌려 표시한다.
@@ -69,18 +69,23 @@ const canSubmit = computed(
     !submitting.value &&
     state.name.trim() !== '' &&
     /^\d{4}\.\d{2}\.\d{2}$/.test(state.birth.trim()) &&
-    state.phone.replace(/\D/g, '').length >= 10,
+    /^010\d{8}$/.test(state.phone.replace(/\D/g, '')),
 )
 
-// 아이디·비밀번호(1단계) + 인적 사항(2단계)을 모두 입력한 뒤, 여기서 가입 요청을 한 번만 보낸다.
-// 현재 백엔드 계약(POST /api/users/signup)은 loginId 만 받는다 — 이름·생년월일·전화번호는
-// 아직 서버에 저장되지 않고 클라이언트 상태로만 유지된다.
+// 아이디(1단계) + 이름·생년월일·전화번호(2단계)를 모두 입력한 뒤, 여기서 가입 요청을 한 번만 보낸다.
+// 백엔드 계약(POST /api/users/signup)은 loginId·name·birthDate(yyyyMMdd)·phoneNumber(010########) 를 받는다.
+// 비밀번호는 서버에 저장 경로가 없어(로그인은 아이디만) 화면 입력만 받고 전송하지 않는다.
 async function submit() {
   if (!canSubmit.value) return
   submitting.value = true
   error.value = ''
   try {
-    const res = await userApi.signup(state.loginId)
+    const res = await userApi.signup({
+      loginId: state.loginId,
+      name: state.name.trim(),
+      birthDate: state.birth.replace(/\D/g, ''), // "1999.01.01" → "19990101"
+      phoneNumber: state.phone.replace(/\D/g, ''), // "010-1234-5678" → "01012345678"
+    })
     state.loginId = res.loginId
     router.push('/signup/done')
   } catch (e) {
@@ -167,7 +172,7 @@ async function submit() {
           label="생년월일"
           required
           :min-year="thisYear - 60"
-          :max-year="thisYear - 10"
+          :max-year="thisYear"
         />
         <PhoneSegments v-model="state.phone" label="전화번호" required />
         <button type="submit" class="sr-only">다음</button>
