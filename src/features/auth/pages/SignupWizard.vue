@@ -60,32 +60,20 @@ function goProfile() {
 }
 
 // --- 2단계: 인적 사항 ---
+// 가구원 수는 여기서 받지 않는다 — 진단 정보 입력(IntakeBasic)에서 받아 me/intake 로 전송.
 const thisYear = new Date().getFullYear()
 const error = ref('')
 const submitting = ref(false)
-const household = computed({
-  get: () => (state.householdSize == null ? '' : String(state.householdSize)),
-  set: (v: string) => {
-    let n = parseInt(v.replace(/\D/g, '').slice(0, 2), 10)
-    if (!Number.isFinite(n) || n <= 0) {
-      state.householdSize = null
-      return
-    }
-    if (n > 10) n = 10
-    state.householdSize = n
-  },
-})
 const canSubmit = computed(
   () =>
     !submitting.value &&
     state.name.trim() !== '' &&
     /^\d{4}\.\d{2}\.\d{2}$/.test(state.birth.trim()) &&
-    state.phone.replace(/\D/g, '').length >= 10 &&
-    state.householdSize != null,
+    state.phone.replace(/\D/g, '').length >= 10,
 )
 
 // 아이디·비밀번호(1단계) + 인적 사항(2단계)을 모두 입력한 뒤, 여기서 가입 요청을 한 번만 보낸다.
-// 현재 백엔드 계약(POST /api/users/signup)은 loginId 만 받는다 — 이름·생년월일·전화번호·가구원 수는
+// 현재 백엔드 계약(POST /api/users/signup)은 loginId 만 받는다 — 이름·생년월일·전화번호는
 // 아직 서버에 저장되지 않고 클라이언트 상태로만 유지된다.
 async function submit() {
   if (!canSubmit.value) return
@@ -182,15 +170,6 @@ async function submit() {
           :max-year="thisYear - 10"
         />
         <PhoneSegments v-model="state.phone" label="전화번호" required />
-        <UiField
-          v-model="household"
-          label="가구원 수"
-          required
-          placeholder="예: 1"
-          inputmode="numeric"
-          :maxlength="2"
-          suffix="명"
-        />
         <button type="submit" class="sr-only">다음</button>
       </form>
 
