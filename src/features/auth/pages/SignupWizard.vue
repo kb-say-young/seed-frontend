@@ -43,6 +43,12 @@ watch(targetWidth, (w) => {
 const loginId = ref(state.loginId)
 // 비밀번호: 화면에는 두되 백엔드로 보내지 않는다 (현재 계약은 아이디만).
 const pw = ref('')
+// 아이디 중복(409)은 2단계 제출 때 알 수 있지만, 아이디 필드가 여기 있으므로
+// 이 필드의 에러로 되돌려 표시한다.
+const idError = ref('')
+watch(loginId, () => {
+  idError.value = ''
+})
 const canNext = computed(() => {
   const v = loginId.value.trim()
   return v.length >= 4 && v.length <= 30 && pw.value.length >= 8
@@ -90,9 +96,12 @@ async function submit() {
     state.loginId = res.loginId
     router.push('/signup/done')
   } catch (e) {
-    if (e instanceof ApiError) {
-      error.value =
-        e.status === 409 ? `${e.message} 이전 단계에서 아이디를 바꿔 주세요.` : e.message
+    if (e instanceof ApiError && e.status === 409) {
+      // 아이디 중복 — 1단계로 돌려보내 아이디 필드에 에러 표시
+      idError.value = e.message || '이미 사용 중인 아이디예요. 다른 아이디를 입력해 주세요.'
+      router.push('/signup')
+    } else if (e instanceof ApiError) {
+      error.value = e.message
     } else {
       error.value = '가입에 실패했어요. 잠시 후 다시 시도해 주세요.'
     }
@@ -130,6 +139,7 @@ async function submit() {
           :maxlength="30"
           autocomplete="username"
           hint="다른 사람에게 보이지 않아요"
+          :error="idError"
         />
         <UiField
           v-model="pw"
