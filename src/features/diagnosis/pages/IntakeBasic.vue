@@ -39,7 +39,6 @@ const household = computed({
 <template>
   <WizardChrome
     title="정보 입력"
-    intro="3분이면 끝나요. 정확할수록 로드맵이 더 잘 맞아요."
     :step="1"
     :total="3"
     step-label="기본 정보"
@@ -54,7 +53,6 @@ const household = computed({
         required
         :min-year="thisYear - 20"
         :max-year="thisYear + 5"
-        hint="예정일도 괜찮아요. 연·월·일 칸을 눌러 선택해요"
       />
 
       <fieldset>
@@ -77,12 +75,7 @@ const household = computed({
         </div>
       </fieldset>
 
-      <RegionSelect
-        v-model="state.regionCode"
-        label="현재 거주지"
-        required
-        hint="시/도를 고르면 시/군/구를 선택할 수 있어요"
-      />
+      <RegionSelect v-model="state.regionCode" label="현재 거주지" required />
 
       <UiField
         v-model="household"
@@ -92,7 +85,6 @@ const household = computed({
         inputmode="numeric"
         :maxlength="2"
         suffix="명"
-        hint="혼자 살면 1명 · 최대 10명"
       />
     </div>
   </WizardChrome>
