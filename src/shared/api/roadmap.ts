@@ -44,7 +44,6 @@ export interface Milestone {
 }
 
 export interface RoadmapSummary {
-  securedMonths: number // 확보 자금으로 버틸 개월 수
   targetMonths: number // 자립수당 종료 시점(개월)
   totalCost: number // 로드맵 전체 예상 비용(원)
   securedAmount: number // 현재 확보액(원)

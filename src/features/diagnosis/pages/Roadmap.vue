@@ -99,12 +99,12 @@ function onTouchEnd(e: TouchEvent) {
       </div>
 
       <template v-else-if="roadmap">
-        <!-- 예산 확보 런웨이 -->
+        <!-- 예산 확보 현황 -->
         <section class="glass rounded-2xl p-4" aria-labelledby="runway-label">
           <div class="flex items-end justify-between">
-            <span id="runway-label" class="text-body-sm text-muted">예산 확보까지</span>
+            <span id="runway-label" class="text-body-sm text-muted">예산 확보 현황</span>
             <span class="tabular text-[1.75rem] font-extrabold leading-none text-ink"
-              >{{ roadmap.summary.securedMonths }}개월</span
+              >{{ securedPct }}%</span
             >
           </div>
           <div
