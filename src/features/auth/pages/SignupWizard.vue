@@ -74,7 +74,7 @@ const canSubmit = computed(
 )
 
 // 아이디(1단계) + 이름·생년월일·전화번호(2단계)를 모두 입력한 뒤, 여기서 가입 요청을 한 번만 보낸다.
-// 백엔드 계약(POST /api/users/signup)은 loginId·name·birthDate(yyyyMMdd)·phoneNumber(010########) 를 받는다.
+// 백엔드 계약(POST /api/users/signup)은 loginId·name·birthDate(yyyy-MM-dd · LocalDate)·phoneNumber(010########) 를 받는다.
 // 비밀번호는 서버에 저장 경로가 없어(로그인은 아이디만) 화면 입력만 받고 전송하지 않는다.
 async function submit() {
   if (!canSubmit.value) return
@@ -84,7 +84,7 @@ async function submit() {
     const res = await userApi.signup({
       loginId: state.loginId,
       name: state.name.trim(),
-      birthDate: state.birth.replace(/\D/g, ''), // "1999.01.01" → "19990101"
+      birthDate: state.birth.trim().replace(/\./g, '-'), // "1999.01.01" → "1999-01-01" (BE LocalDate)
       phoneNumber: state.phone.replace(/\D/g, ''), // "010-1234-5678" → "01012345678"
     })
     state.loginId = res.loginId
