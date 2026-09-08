@@ -1,4 +1,7 @@
 <script setup lang="ts">
+// TODO(#14): GET /api/diagnoses/{diagnosisId}/recommendations 로 교체.
+//   차단: me/intake 응답이 204라 diagnosisId 를 못 받음 → BE #30/#33 확정 대기.
+//   현재는 shared/lib/roadmap.ts 목데이터 사용.
 import { ref, computed } from 'vue'
 import { Share2 } from 'lucide-vue-next'
 import SustainMeter from '@/shared/components/SustainMeter.vue'
