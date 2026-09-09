@@ -17,6 +17,8 @@ export interface Recommendation {
   targetAmount: number | null
   nextAction: string | null
   status: RecommendationStatus
+  taskDoneCount: number // 완료한 하위 체크리스트 항목 수
+  taskTotalCount: number // 전체 하위 체크리스트 항목 수
 }
 
 export interface ChecklistItem {

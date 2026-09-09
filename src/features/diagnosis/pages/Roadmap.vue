@@ -272,8 +272,8 @@ function onTouchEnd(e: TouchEvent) {
                 :to="`/roadmap/${r.recommendationId}`"
                 :title="r.title"
                 :status="r.status"
-                :tasks-done="0"
-                :tasks-total="0"
+                :tasks-done="r.taskDoneCount"
+                :tasks-total="r.taskTotalCount"
               />
               <p v-if="recos.length === 0" class="glass rounded-2xl p-4 text-body-sm text-muted">
                 이 영역에 해당하는 목표가 없어요.
