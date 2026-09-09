@@ -50,6 +50,7 @@ export interface RoadmapSummary {
 }
 
 export interface RoadmapResponse {
+  diagnosisId: number
   protectionEndYm: string | null // "2024.02"
   planUntilYm: string | null // "2029.02"
   summary: RoadmapSummary
