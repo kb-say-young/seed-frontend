@@ -6,13 +6,14 @@ import { won, manwon } from '@/shared/lib/money'
 import { StackedBar, RingChart } from '@/shared/ui/charts'
 import { fundApi } from '@/shared/api'
 import type { FundCategoryKey } from '@/shared/api/fund'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 
 // Figma "자금 계획 · AI 추천 예산" 변형. 목적별 배분 요약(/fund)과 토글로 전환.
 // 배분 슬라이더는 도넛을 즉시 갱신하되 저장은 배분 비율 조정(/fund/allocation)에서.
-const { data: ai, loading, error, reload } = useResource(() => fundApi.getFundAi(), {
-  requireAuth: true,
-})
+const { data: ai, loading, error, errorCode, reload } = useResource(
+  () => fundApi.getFundAi(),
+  { requireAuth: true },
+)
 
 const CAT_STYLE: Record<FundCategoryKey, { dot: string; color: string }> = {
   housing: { dot: 'bg-cat-housing', color: 'var(--color-cat-housing)' },
@@ -52,6 +53,7 @@ const amount = (pct: number) => Math.round(((ai.value?.monthlyBudget ?? 0) * pct
     :loading="loading"
     :show-error="!!error || !ai"
     :error-message="error ?? '추천 예산을 불러오지 못했어요.'"
+    :auth-required="errorCode === AUTH_REQUIRED_ERROR_CODE"
     @reload="reload"
   >
     <template v-if="ai">

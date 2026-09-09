@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Share2, ChevronRight } from 'lucide-vue-next'
+import { ChevronRight } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import MilestoneSlideCard from '@/features/diagnosis/components/MilestoneSlideCard.vue'
@@ -9,7 +9,7 @@ import { roadmapApi, diagnosisApi, ApiError } from '@/shared/api'
 import type { MilestoneBucket, MilestoneCategory } from '@/shared/api/roadmap'
 import type { Recommendation, RecommendationCategory } from '@/shared/api/diagnosis'
 import { setDiagnosisId } from '@/shared/lib/diagnosis'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 import { manwon } from '@/shared/lib/money'
 
 // Reading this as: 진단결과 페이지네이션 슬라이드 for 취약계층 청소년, trust-first, DENSITY 3.
@@ -29,6 +29,7 @@ const {
 // 백엔드가 그 사용자 명의의 진단을 하나도 못 찾으면 DIAGNOSIS_404_001 로 내려준다
 // (아직 진단을 한 번도 안 끝낸 경우). 이땐 재시도가 무의미하므로 진단 입력으로 보낸다.
 const noDiagnosis = computed(() => errorCode.value === 'DIAGNOSIS_404_001')
+const authRequired = computed(() => errorCode.value === AUTH_REQUIRED_ERROR_CODE)
 
 function goToIntake() {
   router.push('/intake')
@@ -127,17 +128,8 @@ function onTouchEnd(e: TouchEvent) {
 
 <template>
   <div class="relative min-h-svh bg-transparent px-6 pb-32 pt-14">
-    <header class="flex items-start justify-between gap-3">
-      <div>
-        <h1 class="text-h2 text-ink">내 진단결과</h1>
-      </div>
-      <button
-        type="button"
-        class="tap-target -mr-2 flex items-center justify-center rounded-full text-muted"
-        aria-label="진단결과 공유"
-      >
-        <Share2 :size="20" aria-hidden="true" />
-      </button>
+    <header>
+      <h1 class="text-h2 text-ink">내 진단결과</h1>
     </header>
 
     <main id="main" class="mt-8 space-y-4">
@@ -146,6 +138,9 @@ function onTouchEnd(e: TouchEvent) {
       <div v-else-if="error" class="py-16 text-center">
         <p class="text-body-sm text-muted">{{ error }}</p>
         <UiButton v-if="noDiagnosis" class="mt-3" @click="goToIntake">진단하러 가기</UiButton>
+        <UiButton v-else-if="authRequired" class="mt-3" @click="router.push('/login')"
+          >로그인하러 가기</UiButton
+        >
         <UiButton v-else variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
       </div>
 
@@ -268,8 +263,8 @@ function onTouchEnd(e: TouchEvent) {
                 :to="`/roadmap/${r.recommendationId}`"
                 :title="r.title"
                 :status="r.status"
-                :tasks-done="0"
-                :tasks-total="0"
+                :tasks-done="r.taskDoneCount"
+                :tasks-total="r.taskTotalCount"
               />
               <p v-if="recos.length === 0" class="glass rounded-2xl p-4 text-body-sm text-muted">
                 이 영역에 해당하는 목표가 없어요.

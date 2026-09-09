@@ -6,12 +6,13 @@ import UiButton from '@/shared/ui/UiButton.vue'
 import { won } from '@/shared/lib/money'
 import { fundApi, ApiError } from '@/shared/api'
 import type { FundCategoryKey } from '@/shared/api/fund'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 
 const router = useRouter()
-const { data: plan, loading, error, reload } = useResource(() => fundApi.getFundPlan(), {
-  requireAuth: true,
-})
+const { data: plan, loading, error, errorCode, reload } = useResource(
+  () => fundApi.getFundPlan(),
+  { requireAuth: true },
+)
 
 const CAT_STYLE: Record<FundCategoryKey, { dot: string; accent: string }> = {
   housing: { dot: 'bg-cat-housing', accent: 'var(--color-cat-housing)' },
@@ -66,7 +67,13 @@ async function save() {
 
       <div v-else-if="error || !plan" class="py-16 text-center">
         <p class="text-body-sm text-muted">{{ error ?? '자금 계획을 불러오지 못했어요.' }}</p>
-        <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
+        <UiButton
+          v-if="errorCode === AUTH_REQUIRED_ERROR_CODE"
+          class="mt-3"
+          @click="router.push('/login')"
+          >로그인하러 가기</UiButton
+        >
+        <UiButton v-else variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
       </div>
 
       <template v-else>

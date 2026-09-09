@@ -7,12 +7,13 @@ import { won, manwon } from '@/shared/lib/money'
 import { StackedBar } from '@/shared/ui/charts'
 import { fundApi } from '@/shared/api'
 import type { FundCategoryKey } from '@/shared/api/fund'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 
 // Figma "자금 계획 · 목적별 배분". AI 추천(/fund/ai)과 토글로 전환.
-const { data: plan, loading, error, reload } = useResource(() => fundApi.getFundPlan(), {
-  requireAuth: true,
-})
+const { data: plan, loading, error, errorCode, reload } = useResource(
+  () => fundApi.getFundPlan(),
+  { requireAuth: true },
+)
 
 // 부족분은 백엔드가 따로 주지 않는다 — 전체 비용에서 확보액을 뺀다.
 const shortfall = computed(() =>
@@ -38,6 +39,7 @@ const CAT_STYLE: Record<FundCategoryKey, { cls: string; color: string }> = {
     :loading="loading"
     :show-error="!!error || !plan"
     :error-message="error ?? '자금 계획을 불러오지 못했어요.'"
+    :auth-required="errorCode === AUTH_REQUIRED_ERROR_CODE"
     @reload="reload"
   >
     <template v-if="plan">

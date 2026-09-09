@@ -2,12 +2,17 @@
 // - 마운트 시 자동 fetch (immediate: false 로 끔)
 // - requireAuth: true 면 비로그인 시 요청하지 않고 안내 문구를 error 로 세팅
 // - ApiError.message 를 그대로 노출 (백엔드 공통 응답의 message)
-// - errorCode 는 백엔드 공통 응답의 code (예: "DIAGNOSIS_404_001"). 화면이 에러 종류별로
-//   다른 액션(재시도 대신 다른 화면으로 이동 등)을 보여줘야 할 때 message 대신 이걸로 분기한다.
+// - errorCode 는 보통 백엔드 공통 응답의 code (예: "DIAGNOSIS_404_001") 지만, 비로그인으로
+//   막힌 경우엔 서버까지 가지도 않으므로 클라이언트 쪽 의사 코드 AUTH_REQUIRED_ERROR_CODE 를 쓴다.
+//   화면이 에러 종류별로 다른 액션(재시도 대신 로그인으로 이동 등)을 보여줘야 할 때
+//   message 대신 이 코드로 분기한다.
 
 import { ref, shallowRef, onMounted, type Ref } from 'vue'
 import { ApiError } from '@/shared/api'
 import { isLoggedIn } from '@/shared/lib/auth'
+
+/** requireAuth 화면에서 비로그인으로 막혔을 때의 errorCode. 서버 코드가 아니다. */
+export const AUTH_REQUIRED_ERROR_CODE = 'AUTH_REQUIRED'
 
 export interface Resource<T> {
   data: Ref<T | null>
@@ -30,7 +35,7 @@ export function useResource<T>(
     if (opts.requireAuth && !isLoggedIn()) {
       data.value = null
       error.value = '로그인하면 내 정보를 볼 수 있어요.'
-      errorCode.value = null
+      errorCode.value = AUTH_REQUIRED_ERROR_CODE
       return
     }
     loading.value = true

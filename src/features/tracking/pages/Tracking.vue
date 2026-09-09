@@ -1,21 +1,29 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import ViewTogglePage from '@/shared/components/ViewTogglePage.vue'
+import ExpenseAddSheet from '@/features/tracking/components/ExpenseAddSheet.vue'
 import { ProgressMeter, SegmentBar } from '@/shared/ui/charts'
 import { expenseApi } from '@/shared/api'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 import { won } from '@/shared/lib/money'
 
-const router = useRouter()
-const { data: t, loading, error, reload } = useResource(() => expenseApi.getTrackingSummary(), {
-  requireAuth: true,
-})
+const { data: t, loading, error, errorCode, reload } = useResource(
+  () => expenseApi.getTrackingSummary(),
+  { requireAuth: true },
+)
 
 const planRoom = computed(() => (t.value ? t.value.plan - t.value.spent : 0))
 // "MM.DD"
 const mmdd = (iso: string) => iso.slice(5).replace('-', '.')
+
+// 지출·수입 추가 — 예전엔 /tracking/add 로 이동했는데, 화면 이동 없이 시트로 바로 적는다.
+const addSheetOpen = ref(false)
+const addSheetKind = ref<'expense' | 'income'>('expense')
+function openAddSheet(k: 'expense' | 'income') {
+  addSheetKind.value = k
+  addSheetOpen.value = true
+}
 </script>
 
 <template>
@@ -30,6 +38,7 @@ const mmdd = (iso: string) => iso.slice(5).replace('-', '.')
     :loading="loading"
     :show-error="!!error || !t"
     :error-message="error ?? '기록을 불러오지 못했어요.'"
+    :auth-required="errorCode === AUTH_REQUIRED_ERROR_CODE"
     @reload="reload"
   >
     <template #intro>
@@ -80,8 +89,8 @@ const mmdd = (iso: string) => iso.slice(5).replace('-', '.')
       </section>
 
       <div class="grid grid-cols-2 gap-3">
-        <UiButton @click="router.push('/tracking/add')">지출 추가</UiButton>
-        <UiButton variant="secondary" @click="router.push('/tracking/add')">수입 추가</UiButton>
+        <UiButton @click="openAddSheet('expense')">지출 추가</UiButton>
+        <UiButton variant="secondary" @click="openAddSheet('income')">수입 추가</UiButton>
       </div>
 
       <section class="glass rounded-2xl p-4">
@@ -102,4 +111,11 @@ const mmdd = (iso: string) => iso.slice(5).replace('-', '.')
       </section>
     </template>
   </ViewTogglePage>
+
+  <ExpenseAddSheet
+    :open="addSheetOpen"
+    :kind="addSheetKind"
+    @close="addSheetOpen = false"
+    @saved="reload"
+  />
 </template>

@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Check } from 'lucide-vue-next'
 import AppHeader from '@/shared/components/AppHeader.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { roadmapApi } from '@/shared/api'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 
 // Reading this as: 정책 상세 정보 페이지 for 취약계층 청소년, trust-first, DENSITY 3.
 // 라우트 /roadmap/:id/policy — :id 는 마일스톤 id. 그 마일스톤에 연결된 정책 상세를 조회한다.
 
 const route = useRoute()
+const router = useRouter()
 
-const { data: policy, loading, error, reload } = useResource(
+const { data: policy, loading, error, errorCode, reload } = useResource(
   () => roadmapApi.getMilestonePolicy(String(route.params.id)),
   { requireAuth: true },
 )
@@ -36,7 +37,13 @@ const badge = computed(() => {
 
       <div v-else-if="error || !policy" class="py-16 text-center">
         <p class="text-body-sm text-muted">{{ error ?? '정책 정보를 찾을 수 없어요.' }}</p>
-        <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
+        <UiButton
+          v-if="errorCode === AUTH_REQUIRED_ERROR_CODE"
+          class="mt-3"
+          @click="router.push('/login')"
+          >로그인하러 가기</UiButton
+        >
+        <UiButton v-else variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
       </div>
 
       <template v-else>

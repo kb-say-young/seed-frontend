@@ -78,9 +78,28 @@ export function getRoadmap(): Promise<RoadmapResponse> {
   return http.get<RoadmapResponse>('/api/users/me/roadmap')
 }
 
+// ⚠️ 목업 — GET /api/users/me/roadmap/milestones/{id}/policy 는 백엔드에 없다.
+// 백엔드가 생기면 아래 mockPolicyDetail 을 지우고 실제 http.get 호출로 되돌린다.
+const mockPolicyDetail = (policyId: string): PolicyDetail => ({
+  policyId,
+  title: 'LH 전세임대주택 (청년·자립준비청년 유형)',
+  provider: 'LH 한국토지주택공사',
+  status: 'eligible',
+  amount: '보증금 100만 원 · 월 임대료 시세의 30% 수준',
+  period: '최초 2년, 최대 6년까지 연장 가능',
+  applyPeriod: '수시 접수',
+  eligibility: [
+    '보호종료 5년 이내 자립준비청년',
+    '무주택자',
+    '기준 중위소득 100% 이하',
+  ],
+  documents: ['임대차 계약 예정 확인서', '가족관계증명서', '소득 확인 서류'],
+  applyUrl: 'https://www.lh.or.kr',
+})
+
 /** 마일스톤에 연결된 정책 상세. */
 export function getMilestonePolicy(milestoneId: string): Promise<PolicyDetail> {
-  return http.get<PolicyDetail>(`/api/users/me/roadmap/milestones/${milestoneId}/policy`)
+  return Promise.resolve(mockPolicyDetail(milestoneId))
 }
 
 /** 체크리스트 항목 완료 처리(+ 선택적으로 비용 기록). */
