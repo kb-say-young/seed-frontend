@@ -1,6 +1,8 @@
 // 인증 토큰 보관 — localStorage. 서버 연동 전까지의 유일한 세션 저장소.
 // 로그인 없이 둘러보기가 가능한 앱이므로(§CLAUDE.md), 토큰 없음 = 비로그인 상태로 취급.
 
+import { clearDiagnosisId } from '@/shared/lib/diagnosis'
+
 const ACCESS_KEY = 'seed.accessToken'
 const REFRESH_KEY = 'seed.refreshToken'
 
@@ -33,6 +35,8 @@ export function setTokens(accessToken: string, refreshToken: string) {
 export function clearTokens() {
   write(ACCESS_KEY, null)
   write(REFRESH_KEY, null)
+  // 진단 id 는 사용자 세션에 묶인 값이라 로그아웃 시 같이 버린다.
+  clearDiagnosisId()
 }
 export function isLoggedIn(): boolean {
   return getAccessToken() != null

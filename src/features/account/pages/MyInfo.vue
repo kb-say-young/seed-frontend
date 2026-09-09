@@ -43,12 +43,10 @@ async function logout() {
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <header class="px-5 pb-2 pt-6" style="padding-top: max(1.5rem, env(safe-area-inset-top))">
-      <h1 class="text-h2 text-ink">내정보</h1>
-    </header>
+  <div class="min-h-svh bg-transparent px-6 pb-32 pt-14">
+    <h1 class="text-h2 text-ink">내정보</h1>
 
-    <main id="main" class="px-5 pb-32 pt-3">
+    <main id="main" class="mt-8">
       <section class="flex items-center glass gap-3.5 rounded-2xl p-4">
         <span
           class="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary-tint text-h3 font-bold text-primary-dark"
