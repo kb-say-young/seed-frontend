@@ -23,21 +23,18 @@ const greetingName = computed(
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <header
-      class="glass-strong z-10 flex items-start justify-between border-x-0 border-t-0 px-5 pb-3 pt-3"
-      style="padding-top: max(0.75rem, env(safe-area-inset-top))"
-    >
+  <div class="min-h-svh bg-transparent px-6 pb-32 pt-14">
+    <header class="flex items-start justify-between gap-3">
       <div>
         <h1 class="text-h2 text-ink">안녕하세요, {{ greetingName }}님</h1>
-        <p v-if="home" class="mt-0.5 text-body-sm text-muted">{{ home.headline }}</p>
+        <p v-if="home" class="mt-2 text-body-sm text-muted">{{ home.headline }}</p>
       </div>
       <button type="button" class="tap-target -mr-2 flex items-center justify-center rounded-full text-muted" aria-label="알림">
         <Bell :size="22" aria-hidden="true" />
       </button>
     </header>
 
-    <main id="main" class="space-y-4 px-5 pb-32 pt-2">
+    <main id="main" class="mt-8 space-y-4">
       <p v-if="loading" class="py-16 text-center text-body-sm text-muted">불러오는 중…</p>
 
       <div v-else-if="error" class="py-16 text-center">

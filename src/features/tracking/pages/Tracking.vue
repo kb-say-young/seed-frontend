@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import AppHeader from '@/shared/components/AppHeader.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import ViewToggle from '@/shared/ui/ViewToggle.vue'
@@ -21,9 +20,9 @@ const mmdd = (iso: string) => iso.slice(5).replace('-', '.')
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <AppHeader title="기록" to="/roadmap" />
-    <main id="main" class="space-y-3 px-5 pb-32 pt-2">
+  <div class="min-h-svh bg-transparent px-6 pb-32 pt-14">
+    <h1 class="text-h2 text-ink">기록</h1>
+    <main id="main" class="mt-8 space-y-3">
       <ViewToggle
         :options="[
           { label: '기록', to: '/tracking' },
