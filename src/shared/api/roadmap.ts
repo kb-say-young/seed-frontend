@@ -51,7 +51,7 @@ export interface RoadmapSummary {
 }
 
 export interface RoadmapResponse {
-  diagnosisId: number | null // 이 로드맵이 계산 기준으로 삼은 진단 id
+  diagnosisId: number // 이 로드맵이 계산 기준으로 삼은 진단 id
   protectionEndYm: string | null // "2024.02"
   planUntilYm: string | null // "2029.02"
   summary: RoadmapSummary
