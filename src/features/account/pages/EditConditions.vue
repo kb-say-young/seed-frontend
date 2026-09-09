@@ -72,7 +72,7 @@ const hint = computed(() => {
           v-for="[label, value] in rows"
           :key="label"
           type="button"
-          class="tap-target flex w-full items-center justify-between gap-3 rounded-2xl border border-border px-4 py-3.5 text-left"
+          class="tap-target glass flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3.5 text-left"
         >
           <span>
             <span class="block text-caption text-muted">{{ label }}</span>
