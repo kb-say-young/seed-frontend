@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import AppHeader from '@/shared/components/AppHeader.vue'
-import UiButton from '@/shared/ui/UiButton.vue'
-import FloatingNav from '@/shared/components/FloatingNav.vue'
-import ViewToggle from '@/shared/ui/ViewToggle.vue'
+import ViewTogglePage from '@/shared/components/ViewTogglePage.vue'
 import { won } from '@/shared/lib/money'
 import { ProgressMeter, BarChart } from '@/shared/ui/charts'
 import { expenseApi } from '@/shared/api'
@@ -48,80 +45,73 @@ const planRoom = computed(() => (budget.value ? budget.value.plan - budget.value
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <AppHeader title="기록" to="/roadmap" />
-    <main id="main" class="space-y-3 px-5 pb-32 pt-2">
-      <ViewToggle
-        :options="[
-          { label: '기록', to: '/tracking' },
-          { label: '예산 대비', to: '/tracking/budget' },
-        ]"
-        active="예산 대비"
-      />
+  <ViewTogglePage
+    title="기록"
+    :options="[
+      { label: '기록', to: '/tracking' },
+      { label: '예산 대비', to: '/tracking/budget' },
+    ]"
+    active="예산 대비"
+    spacing="sm"
+    :loading="loading"
+    :show-error="!!error || !budget"
+    :error-message="error ?? '예산 정보를 불러오지 못했어요.'"
+    @reload="reload"
+  >
+    <template v-if="budget">
+      <section class="glass rounded-2xl p-4">
+        <div class="flex items-end justify-between">
+          <span class="text-body-sm text-muted">이번 달 지출</span>
+          <span class="tabular text-h3 font-bold text-ink">{{ won(budget.spent) }}</span>
+        </div>
+        <p class="mt-1 text-caption text-muted">
+          계획 {{ won(budget.plan) }} ·
+          {{ planRoom >= 0 ? '아직 여유 있어요' : `${won(-planRoom)} 초과` }}
+        </p>
+        <BarChart
+          class="mt-4"
+          :height="116"
+          :data="rows.map((c) => ({ label: c.label, value: c.actual, plan: c.budget, color: c.style.color }))"
+          :format="(n) => `${Math.round(n / 10000)}만`"
+          caption="막대 = 실제 지출 · 가로선 = AI 추천 예산"
+        />
+      </section>
 
-      <p v-if="loading" class="py-16 text-center text-body-sm text-muted">불러오는 중…</p>
+      <h2 class="text-label text-ink">예산 대비 지출 기록</h2>
 
-      <div v-else-if="error || !budget" class="py-16 text-center">
-        <p class="text-body-sm text-muted">{{ error ?? '예산 정보를 불러오지 못했어요.' }}</p>
-        <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
-      </div>
+      <section v-for="r in rows" :key="r.key" class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-2 text-label font-bold text-ink">
+            <span class="size-2.5 rounded-full" :class="r.style.dot" aria-hidden="true" />{{ r.label }}
+          </span>
+          <span class="rounded-full px-2.5 py-1 text-caption font-semibold" :class="r.m.badge">
+            {{ r.m.text }}
+          </span>
+        </div>
 
-      <template v-else>
-        <section class="glass rounded-2xl p-4">
-          <div class="flex items-end justify-between">
-            <span class="text-body-sm text-muted">이번 달 지출</span>
-            <span class="tabular text-h3 font-bold text-ink">{{ won(budget.spent) }}</span>
+        <div class="mt-3 flex items-end justify-between">
+          <div>
+            <p class="text-caption text-muted">AI 추천 예산</p>
+            <p class="tabular text-body-sm font-semibold text-body">{{ won(r.budget) }}</p>
           </div>
-          <p class="mt-1 text-caption text-muted">
-            계획 {{ won(budget.plan) }} ·
-            {{ planRoom >= 0 ? '아직 여유 있어요' : `${won(-planRoom)} 초과` }}
-          </p>
-          <BarChart
-            class="mt-4"
-            :height="116"
-            :data="rows.map((c) => ({ label: c.label, value: c.actual, plan: c.budget, color: c.style.color }))"
-            :format="(n) => `${Math.round(n / 10000)}만`"
-            caption="막대 = 실제 지출 · 가로선 = AI 추천 예산"
-          />
-        </section>
-
-        <h2 class="text-label text-ink">예산 대비 지출 기록</h2>
-
-        <section v-for="r in rows" :key="r.key" class="glass rounded-2xl p-4">
-          <div class="flex items-center justify-between">
-            <span class="flex items-center gap-2 text-label font-bold text-ink">
-              <span class="size-2.5 rounded-full" :class="r.style.dot" aria-hidden="true" />{{ r.label }}
-            </span>
-            <span class="rounded-full px-2.5 py-1 text-caption font-semibold" :class="r.m.badge">
-              {{ r.m.text }}
-            </span>
+          <div class="text-right">
+            <p class="text-caption text-muted">실제 지출</p>
+            <p class="tabular text-body-sm font-bold text-ink">{{ won(r.actual) }}</p>
           </div>
+        </div>
 
-          <div class="mt-3 flex items-end justify-between">
-            <div>
-              <p class="text-caption text-muted">AI 추천 예산</p>
-              <p class="tabular text-body-sm font-semibold text-body">{{ won(r.budget) }}</p>
-            </div>
-            <div class="text-right">
-              <p class="text-caption text-muted">실제 지출</p>
-              <p class="tabular text-body-sm font-bold text-ink">{{ won(r.actual) }}</p>
-            </div>
-          </div>
-
-          <ProgressMeter
-            class="mt-2.5"
-            :value="r.actual"
-            :max="r.budget || 1"
-            :color="r.m.bar"
-            :over="!r.saving"
-            :aria-label="`${r.label} 실제 지출 ${won(r.actual)} · 예산 ${won(r.budget)}의 ${r.m.pct}퍼센트 (${r.m.text})`"
-          />
-          <p class="tabular mt-1 text-right text-caption font-semibold" :class="r.m.pctCls">
-            {{ r.m.pct }}%
-          </p>
-        </section>
-      </template>
-    </main>
-    <FloatingNav />
-  </div>
+        <ProgressMeter
+          class="mt-2.5"
+          :value="r.actual"
+          :max="r.budget || 1"
+          :color="r.m.bar"
+          :over="!r.saving"
+          :aria-label="`${r.label} 실제 지출 ${won(r.actual)} · 예산 ${won(r.budget)}의 ${r.m.pct}퍼센트 (${r.m.text})`"
+        />
+        <p class="tabular mt-1 text-right text-caption font-semibold" :class="r.m.pctCls">
+          {{ r.m.pct }}%
+        </p>
+      </section>
+    </template>
+  </ViewTogglePage>
 </template>
