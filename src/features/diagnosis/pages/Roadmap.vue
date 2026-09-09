@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { Share2, ChevronRight } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
@@ -13,9 +14,25 @@ import { manwon } from '@/shared/lib/money'
 
 // Reading this as: 진단결과 페이지네이션 슬라이드 for 취약계층 청소년, trust-first, DENSITY 3.
 
-const { data: roadmap, loading, error, reload } = useResource(roadmapApi.getRoadmap, {
+const router = useRouter()
+
+const {
+  data: roadmap,
+  loading,
+  error,
+  errorCode,
+  reload,
+} = useResource(roadmapApi.getRoadmap, {
   requireAuth: true,
 })
+
+// 백엔드가 그 사용자 명의의 진단을 하나도 못 찾으면 DIAGNOSIS_404_001 로 내려준다
+// (아직 진단을 한 번도 안 끝낸 경우). 이땐 재시도가 무의미하므로 진단 입력으로 보낸다.
+const noDiagnosis = computed(() => errorCode.value === 'DIAGNOSIS_404_001')
+
+function goToIntake() {
+  router.push('/intake')
+}
 
 type Tab = 'all' | MilestoneCategory
 const TABS: { v: Tab; label: string }[] = [
@@ -128,7 +145,8 @@ function onTouchEnd(e: TouchEvent) {
 
       <div v-else-if="error" class="py-16 text-center">
         <p class="text-body-sm text-muted">{{ error }}</p>
-        <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
+        <UiButton v-if="noDiagnosis" class="mt-3" @click="goToIntake">진단하러 가기</UiButton>
+        <UiButton v-else variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
       </div>
 
       <template v-else-if="roadmap">
