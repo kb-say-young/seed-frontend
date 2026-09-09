@@ -26,7 +26,6 @@ const subtitle = computed(() => {
 // 이동 가능한 메뉴
 const menu = [
   { t: '조건 수정', to: '/me/edit' },
-  { t: '목표 수정', to: '/me/edit' },
   { t: '진단 다시하기', to: '/intake' },
 ]
 // 화면 준비 중 (이동 안 함)
