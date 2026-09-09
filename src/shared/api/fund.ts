@@ -39,8 +39,21 @@ export function getFundPlan(): Promise<FundPlanResponse> {
   return http.get<FundPlanResponse>('/api/users/me/fund-plan')
 }
 
+// ⚠️ 목업 — GET /api/users/me/fund-plan/ai 는 백엔드에 없다(목적별 배분 GET만 있음).
+// 백엔드가 생기면 아래 값을 지우고 실제 http.get 호출로 되돌린다.
 export function getFundAi(): Promise<FundAiResponse> {
-  return http.get<FundAiResponse>('/api/users/me/fund-plan/ai')
+  const recommended: FundBucket[] = [
+    { key: 'housing', label: '주거', pct: 40, actual: null, budget: 5000000, amount: null },
+    { key: 'living', label: '생활', pct: 25, actual: null, budget: 3125000, amount: null },
+    { key: 'work', label: '취·창업', pct: 20, actual: null, budget: 2500000, amount: null },
+    { key: 'saving', label: '금융', pct: 15, actual: null, budget: null, amount: 1875000 },
+  ]
+  return Promise.resolve({
+    recommendedTotal: 12500000,
+    recommended,
+    monthlyBudget: 1500000,
+    myAllocation: recommended.map((r) => ({ key: r.key, label: r.label, pct: r.pct })),
+  })
 }
 
 export interface AllocationSaveBody {

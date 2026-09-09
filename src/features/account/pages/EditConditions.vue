@@ -63,13 +63,13 @@ function toWizardDate(iso: string | null | undefined): string {
 }
 
 // 지금 값으로 온보딩 입력 상태를 채운다 — 비워진 채로 보내면 처음부터 다시 입력해야 한다.
-// ⚠️ 학력(education)은 GET /api/users/me 응답에 없어 채울 수 없다. 그 화면에서 다시 골라야 한다.
 function fillIntakeState() {
   const p = me.data?.profile
   intakeState.protectionEndDate = toWizardDate(p?.protectionEndDate)
   intakeState.isYouthSupportApplied = p?.isYouthSupport ?? null
   intakeState.isBasicRecipient = p?.isBasicRecipient ?? null
   intakeState.regionCode = p?.regionCode ?? ''
+  intakeState.educationLevel = p?.education ?? ''
   intakeState.householdSize = p?.householdSize ?? null
   intakeState.monthlyIncome = p?.income ?? null
   intakeState.cdaBalance = p?.fixedBudget ?? null

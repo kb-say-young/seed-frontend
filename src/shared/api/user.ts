@@ -66,9 +66,6 @@ export function submitIntake(payload: IntakePayload): Promise<IntakeResult> {
 }
 
 // --- 내 프로필 조회 (GET /api/users/me) — issue #23 ---
-// ⚠️ 백엔드 미구현. 아래 타입/호출은 이슈 #23 의 "제안 계약" 기준이며,
-//    엔드포인트가 없으면 404 → 소비 화면은 폴백(미입력) 처리된다.
-// User 엔티티에 컬럼은 이미 존재하나 name·birthDate·phone 은 저장 경로가 없어 당분간 null.
 
 export interface MeProfile {
   protectionEndDate: string | null // "YYYY-MM-DD"
@@ -76,6 +73,7 @@ export interface MeProfile {
   isBasicRecipient: boolean | null
   regionCode: string | null // 시/군/구 5자리
   regionDisplay: string | null // "서울특별시 강남구" — 없으면 코드로 조회
+  education: string | null // 온보딩 드롭다운 문자열 그대로("고졸미만" 등, 코드 매핑 없음)
   income: number | null // 월 평균 소득(원)
   householdSize: number | null
   fixedBudget: number | null // 디딤씨앗통장(CDA) 잔액(원)
@@ -105,6 +103,11 @@ export interface MeGoal {
   priority: number | null // 우선순위 (없으면 null)
 }
 
+// ⚠️ 목업 — GET /api/users/me/goals 는 백엔드에 없다.
+// 백엔드가 생기면 아래 값을 지우고 실제 http.get 호출로 되돌린다.
 export function getGoals(): Promise<MeGoal[]> {
-  return http.get<MeGoal[]>('/api/users/me/goals')
+  return Promise.resolve([
+    { parentCategoryId: '1', parentCategoryName: '주거', categoryId: '13', categoryName: '공공임대', priority: 1 },
+    { parentCategoryId: '4', parentCategoryName: '금융', categoryId: '42', categoryName: '적금', priority: 2 },
+  ])
 }
