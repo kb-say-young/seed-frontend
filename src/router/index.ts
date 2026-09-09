@@ -48,7 +48,6 @@ export const router = createRouter({
 
     // tracking — 지출·진척
     { path: '/tracking', name: 'tracking', component: () => import('@/features/tracking/pages/Tracking.vue') },
-    { path: '/tracking/add', name: 'expense-add', component: () => import('@/features/tracking/pages/ExpenseAdd.vue') },
     { path: '/tracking/budget', name: 'tracking-budget', component: () => import('@/features/tracking/pages/TrackingBudget.vue') },
 
     // home / account
