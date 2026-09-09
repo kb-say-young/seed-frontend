@@ -30,10 +30,10 @@ function openAddSheet(k: 'expense' | 'income') {
   <ViewTogglePage
     title="기록"
     :options="[
-      { label: '기록', to: '/tracking' },
+      { label: '사용 내역', to: '/tracking' },
       { label: '예산 대비', to: '/tracking/budget' },
     ]"
-    active="기록"
+    active="사용 내역"
     spacing="sm"
     :loading="loading"
     :show-error="!!error || !t"
@@ -41,12 +41,6 @@ function openAddSheet(k: 'expense' | 'income') {
     :auth-required="errorCode === AUTH_REQUIRED_ERROR_CODE"
     @reload="reload"
   >
-    <template #intro>
-      <p class="text-body-sm leading-snug text-muted">
-        매일 적지 않아도 돼요. 큰 지출만 이따금 기록하면 로드맵이 스스로 맞춰져요.
-      </p>
-    </template>
-
     <template v-if="t">
       <section class="glass rounded-2xl p-4">
         <div class="flex items-end justify-between">
