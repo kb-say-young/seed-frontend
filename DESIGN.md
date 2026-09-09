@@ -501,6 +501,7 @@ taste 스킬 Section 14 (FINAL PRE-FLIGHT CHECK) + `.claude/CLAUDE.md` 하드 �
 - 시리즈 색 = 목표 카테고리 토큰 재사용 (`--chart-c1..c5` = `--color-cat-*` + `--color-amber`).
 - 트랙 = `--chart-track`. 그리드 = `--chart-grid`.
 - 진입 모션: `--chart-enter-dur` (기본 420ms, `prefers-reduced-motion` → **0ms**), ease `cubic-bezier(.22,1,.36,1)`.
+- 값이 바뀔 때(체크리스트 완료/취소 등)도 같은 `--chart-enter-dur`/ease 로 채움이 부드럽게 늘고 준다 (`ProgressMeter`).
 - 접근성: 각 차트 `role="img"` + 의미 있는 한국어 `aria-label`(숫자에 항상 의미). 색만으로 정보 전달 안 함.
 
 ### 컴포넌트
