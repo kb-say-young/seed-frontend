@@ -6,7 +6,7 @@ import UiField from '@/shared/ui/UiField.vue'
 import UiChip from '@/shared/ui/UiChip.vue'
 import DateWheelField from '@/shared/components/DateWheelField.vue'
 import RegionSelect from '@/shared/components/RegionSelect.vue'
-import { state } from '@/features/diagnosis/model/store'
+import { state, EDUCATION_LEVELS } from '@/features/diagnosis/model/store'
 
 const router = useRouter()
 const thisYear = new Date().getFullYear()
@@ -16,6 +16,7 @@ const canNext = computed(
     /^\d{4}\.\d{2}\.\d{2}$/.test(state.protectionEndDate.trim()) &&
     state.isYouthSupportApplied !== null &&
     state.isBasicRecipient !== null &&
+    state.educationLevel !== '' &&
     state.regionCode !== '' &&
     (state.householdSize ?? 0) > 0,
 )
@@ -74,6 +75,21 @@ const household = computed({
           <UiChip label="아니오" :selected="state.isBasicRecipient === false" @toggle="state.isBasicRecipient = false" />
         </div>
       </fieldset>
+
+      <div>
+        <label for="educationLevel" class="mb-1.5 block text-label text-ink">
+          학력<span class="text-danger" aria-hidden="true"> *</span>
+          <span class="sr-only"> (필수)</span>
+        </label>
+        <select
+          id="educationLevel"
+          v-model="state.educationLevel"
+          class="glass-field min-h-12 w-full rounded-md border-[1.5px] px-4 text-body text-ink focus:border-primary"
+        >
+          <option value="" disabled>학력을 선택하세요</option>
+          <option v-for="lv in EDUCATION_LEVELS" :key="lv" :value="lv">{{ lv }}</option>
+        </select>
+      </div>
 
       <RegionSelect v-model="state.regionCode" label="현재 거주지" required />
 
