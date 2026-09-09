@@ -97,9 +97,12 @@ function fillIntakeState() {
   intakeState.householdSize = p?.householdSize ?? null
   intakeState.monthlyIncome = p?.income ?? null
   intakeState.cdaBalance = p?.fixedBudget ?? null
+  // GET /api/users/me/goals 는 세부 목표별 추가 질문 응답(description)을 돌려주지 않는다 —
+  // /intake/goals 화면에서 다시 채워야 진단 재제출이 가능하다.
   intakeState.goals = (goals.value ?? []).map((g) => ({
     parentId: g.parentCategoryId,
     categoryId: g.categoryId,
+    answers: {},
   }))
 }
 

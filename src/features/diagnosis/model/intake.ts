@@ -1,6 +1,6 @@
 // 진단 정보 입력 store → 백엔드 제출 payload 변환.
 // 계약: POST /api/users/me/intake (`카테고리별_요청_API_계약서.md` §3)
-import { state, CATEGORY_LABEL, subLabel, type GoalPick } from '@/features/diagnosis/model/store'
+import { state, CATEGORY_LABEL, subLabel, goalFieldsFor, type GoalPick } from '@/features/diagnosis/model/store'
 import type { IntakePayload, GoalPayload, UserProfilePayload } from '@/shared/api/user'
 
 /** "YYYY.MM.DD" | "YYYY-MM-DD" → "YYYY-MM-DD" */
@@ -8,13 +8,17 @@ function toIsoDate(s: string): string {
   return s.trim().replace(/[./]/g, '-')
 }
 
-// §4(카테고리별 추가 질문) 스키마 미확정 — issue #14 / 계약서 대기.
-// 지금 수집하는 값(희망 금액·희망 거주지)만 우선 담고, note 로 최소 1개 키를 보장한다.
+// §4(카테고리별 추가 질문). 백엔드는 description 구조를 해석하지 않고 그대로 저장하므로
+// (GoalRequest 주석 참조), GOAL_FIELDS 카탈로그가 곧 스키마다 — 그 key 를 그대로 옮긴다.
+// showIf 조건이 안 맞는(숨겨진) 필드는 답이 남아 있어도 보내지 않는다.
 function buildDescription(g: GoalPick): Record<string, unknown> {
   const d: Record<string, unknown> = {}
-  if (g.targetAmount != null) d.target_amount = g.targetAmount
-  if (g.regionCode) d.region_code = g.regionCode
-  if (Object.keys(d).length === 0) d.note = '추가 질문 미구현' // @NotEmpty 대응 (TODO §4)
+  for (const f of goalFieldsFor(g.categoryId)) {
+    if (f.showIf && g.answers[f.showIf.key] !== f.showIf.equals) continue
+    const v = g.answers[f.key]
+    if (v !== undefined && v !== '') d[f.key] = v
+  }
+  if (Object.keys(d).length === 0) d.note = '추가 질문 미구현' // @NotEmpty 대응(카탈로그에 없는 카테고리 등)
   return d
 }
 
