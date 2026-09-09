@@ -51,8 +51,13 @@ export interface IntakePayload {
   goals: GoalPayload[]
 }
 
-export function submitIntake(payload: IntakePayload): Promise<void> {
-  return http.post<void>('/api/users/me/intake', payload)
+export interface SubmitIntakeResponse {
+  diagnosisId: number
+  status: 'running' | 'completed' | 'failed'
+}
+
+export function submitIntake(payload: IntakePayload): Promise<SubmitIntakeResponse> {
+  return http.post<SubmitIntakeResponse>('/api/users/me/intake', payload)
 }
 
 // --- 내 프로필 조회 (GET /api/users/me) — issue #23 ---

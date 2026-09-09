@@ -76,7 +76,14 @@ async function run() {
     // 비로그인(둘러보기)은 제출 대상이 없다 — 최소 노출 후 결과(목/폴백) 화면으로.
     if (isLoggedIn()) {
       phase.value = 'submitting'
-      await userApi.submitIntake(buildIntakePayload())
+      const submitted = await userApi.submitIntake(buildIntakePayload())
+
+      // 백엔드가 이미 생성 실패를 확정한 경우 — 재시도 대기 없이 바로 안내.
+      if (submitted.status === 'failed') {
+        errorMsg.value = 'AI 진단을 만드는 데 실패했어요. 다시 시도해 주세요.'
+        phase.value = 'error'
+        return
+      }
 
       phase.value = 'generating'
       await waitForRoadmap()
