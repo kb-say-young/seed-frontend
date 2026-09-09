@@ -75,7 +75,6 @@ const planRoom = computed(() => (budget.value ? budget.value.plan - budget.value
           :height="116"
           :data="rows.map((c) => ({ label: c.label, value: c.actual, plan: c.budget, color: c.style.color }))"
           :format="(n) => `${Math.round(n / 10000)}만`"
-          caption="막대 = 실제 지출 · 가로선 = AI 추천 예산"
         />
       </section>
 
