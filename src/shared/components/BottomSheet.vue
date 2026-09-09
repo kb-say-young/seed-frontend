@@ -63,7 +63,7 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
-    <Transition name="sheet">
+    <Transition name="sheet" :duration="{ enter: 240, leave: 0 }">
       <div
         v-if="open"
         class="fixed inset-0 z-50 flex items-end justify-center"
@@ -93,7 +93,9 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* enter 만 트랜지션. leave 는 즉시 제거(숨은 탭에서 transitionend 미발화로 스턱되는 것 방지). */
+/* enter 만 트랜지션. leave 는 즉시 제거(숨은 탭에서 transitionend 미발화로 스턱되는 것 방지) —
+   CSS 에 .sheet-leave-active 매치가 없어 Vue 가 duration 을 못 정할 수 있으므로,
+   위 <Transition> 의 :duration="{ leave: 0 }" 로 명시해 확실히 즉시 제거되게 한다. */
 .sheet-enter-active {
   transition: opacity 0.2s var(--ease-out-soft);
 }
