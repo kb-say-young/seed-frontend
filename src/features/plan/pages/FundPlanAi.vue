@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Lock } from 'lucide-vue-next'
 import ViewTogglePage from '@/shared/components/ViewTogglePage.vue'
 import { won, manwon } from '@/shared/lib/money'
 import { StackedBar, RingChart } from '@/shared/ui/charts'
@@ -58,10 +57,7 @@ const amount = (pct: number) => Math.round(((ai.value?.monthlyBudget ?? 0) * pct
   >
     <template v-if="ai">
       <section>
-        <div class="flex items-center gap-1.5">
-          <h2 class="text-label text-ink">AI 추천 예산</h2>
-          <Lock :size="13" class="text-muted" aria-hidden="true" />
-        </div>
+        <h2 class="text-label text-ink">AI 추천 예산</h2>
 
         <div class="mt-3 glass rounded-2xl p-4">
           <div class="glass rounded-xl p-4">
