@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import AppHeader from '@/shared/components/AppHeader.vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ChevronLeft } from 'lucide-vue-next'
 import SavingsLineChart from '@/features/savings/components/SavingsLineChart.vue'
 import { won } from '@/shared/lib/money'
 import { findSavings, thisMonthSaved, TREND_MONTHS, SAVINGS } from '@/features/savings/model/savings'
 
 const route = useRoute()
+const router = useRouter()
 const cat = computed(() => findSavings(String(route.params.category)) ?? SAVINGS[0])
 
 const pct = computed(() => Math.min(100, Math.round((cat.value.saved / cat.value.goal) * 100)))
@@ -17,10 +18,20 @@ const monthPct = computed(() =>
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <AppHeader :title="`${cat.label} · 모은 돈 내역`" to="/savings" />
+  <div class="flex min-h-svh flex-col bg-transparent">
+    <header class="flex items-center gap-2 px-6 pt-14">
+      <button
+        type="button"
+        class="tap-target -ml-2 flex items-center justify-center rounded-full text-ink"
+        aria-label="이전 화면"
+        @click="router.push('/savings')"
+      >
+        <ChevronLeft :size="24" aria-hidden="true" />
+      </button>
+      <h1 class="text-h2 text-ink">{{ cat.label }} · 모은 돈 내역</h1>
+    </header>
 
-    <main id="main" class="space-y-5 px-5 pb-12 pt-2">
+    <main id="main" class="mt-8 flex-1 space-y-5 px-6 pb-12">
       <section class="glass-tint rounded-2xl p-4" aria-labelledby="cat-total">
         <p id="cat-total" class="text-caption font-bold text-muted">
           {{ cat.label }} 카테고리 모은 돈

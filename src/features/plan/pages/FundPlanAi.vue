@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { Lock, Pencil } from 'lucide-vue-next'
 import ViewTogglePage from '@/shared/components/ViewTogglePage.vue'
 import { won, manwon } from '@/shared/lib/money'
 import { StackedBar, RingChart } from '@/shared/ui/charts'
@@ -58,13 +57,7 @@ const amount = (pct: number) => Math.round(((ai.value?.monthlyBudget ?? 0) * pct
   >
     <template v-if="ai">
       <section>
-        <div class="flex items-center gap-1.5">
-          <h2 class="text-label text-ink">AI 추천 예산</h2>
-          <Lock :size="13" class="text-muted" aria-hidden="true" />
-          <span class="text-caption text-muted">로드맵 기반 자동 산출</span>
-        </div>
-
-        <div class="mt-3 glass rounded-2xl p-4">
+        <div class="glass rounded-2xl p-4">
           <div class="glass rounded-xl p-4">
             <p class="text-body-sm text-muted">추천 자립 자금 총액</p>
             <p class="tabular mt-1 text-h1 text-ink">{{ won(ai.recommendedTotal) }}</p>
@@ -92,19 +85,27 @@ const amount = (pct: number) => Math.round(((ai.value?.monthlyBudget ?? 0) * pct
       </section>
 
       <section>
-        <div class="flex items-center justify-between">
-          <h2 class="text-label text-ink">나의 예산 배분</h2>
-          <RouterLink
-            to="/fund/allocation"
-            class="flex items-center gap-1 text-caption font-semibold text-primary-dark no-underline"
-          >
-            <Pencil :size="13" aria-hidden="true" />직접 조정 가능
-          </RouterLink>
-        </div>
+        <h2 class="text-label text-ink">나의 예산 배분</h2>
 
         <div class="mt-3 glass rounded-2xl p-4">
-          <p class="text-body-sm text-muted">총 가용 예산</p>
-          <p class="tabular mt-0.5 text-h2 text-primary-dark">월 {{ won(ai.monthlyBudget) }}</p>
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-body-sm text-muted">총 가용 예산</p>
+              <p class="tabular mt-0.5 text-h2 text-primary-dark">월 {{ won(ai.monthlyBudget) }}</p>
+            </div>
+            <RingChart
+              class="shrink-0"
+              :size="84"
+              :thickness="10"
+              :gap="3"
+              :segments="rows.map((r) => ({ label: r.label, value: r.pct, color: r.accent }))"
+              :aria-label="`예산 배분: ${rows.map((r) => `${r.label} ${r.pct}퍼센트`).join(', ')} · 합계 ${sum}퍼센트`"
+            >
+              <span class="text-label font-bold" :class="sum === 100 ? 'text-ink' : 'text-amber'">
+                {{ sum }}%
+              </span>
+            </RingChart>
+          </div>
 
           <div class="mt-4 space-y-4 border-t border-border pt-4">
             <div v-for="r in rows" :key="r.key">
@@ -127,19 +128,6 @@ const amount = (pct: number) => Math.round(((ai.value?.monthlyBudget ?? 0) * pct
               />
             </div>
           </div>
-
-          <RingChart
-            class="mx-auto mt-5"
-            :size="168"
-            :thickness="16"
-            :segments="rows.map((r) => ({ label: r.label, value: r.pct, color: r.accent }))"
-            :aria-label="`예산 배분: ${rows.map((r) => `${r.label} ${r.pct}퍼센트`).join(', ')} · 합계 ${sum}퍼센트`"
-          >
-            <span class="text-caption text-muted">배분비율</span>
-            <span class="text-h3 font-bold" :class="sum === 100 ? 'text-ink' : 'text-amber'">
-              {{ sum }}%
-            </span>
-          </RingChart>
         </div>
       </section>
     </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Plus } from 'lucide-vue-next'
-import AppHeader from '@/shared/components/AppHeader.vue'
+import { useRouter } from 'vue-router'
+import { ChevronLeft, Plus } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import CategoryProgressCard from '@/features/savings/components/CategoryProgressCard.vue'
@@ -10,6 +10,7 @@ import { won } from '@/shared/lib/money'
 import { SAVINGS, SAVINGS_TOTAL } from '@/features/savings/model/savings'
 
 // Reading this as: 적립 추적 대시보드 for 취약계층 청소년, trust-first, DENSITY 3.
+const router = useRouter()
 const sheetOpen = ref(false)
 const lastAdded = ref('')
 
@@ -20,10 +21,20 @@ function onSubmit(v: { category: string; item: string; amount: number }) {
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <AppHeader title="모은 돈" to="/fund" />
+  <div class="flex min-h-svh flex-col bg-transparent">
+    <header class="flex items-center gap-2 px-6 pt-14">
+      <button
+        type="button"
+        class="tap-target -ml-2 flex items-center justify-center rounded-full text-ink"
+        aria-label="이전 화면"
+        @click="router.push('/fund')"
+      >
+        <ChevronLeft :size="24" aria-hidden="true" />
+      </button>
+      <h1 class="text-h2 text-ink">모은 돈</h1>
+    </header>
 
-    <main id="main" class="space-y-4 px-5 pb-32 pt-2">
+    <main id="main" class="mt-8 flex-1 space-y-4 px-6 pb-32">
       <section class="glass-tint rounded-2xl p-4" aria-labelledby="total-label">
         <p id="total-label" class="text-caption font-bold text-muted">누적 금액</p>
         <p class="tabular mt-1 text-h1 text-ink">{{ won(SAVINGS_TOTAL) }}</p>

@@ -49,7 +49,7 @@ const planRoom = computed(() => (budget.value ? budget.value.plan - budget.value
   <ViewTogglePage
     title="기록"
     :options="[
-      { label: '기록', to: '/tracking' },
+      { label: '사용 내역', to: '/tracking' },
       { label: '예산 대비', to: '/tracking/budget' },
     ]"
     active="예산 대비"
