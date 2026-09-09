@@ -57,9 +57,7 @@ const amount = (pct: number) => Math.round(((ai.value?.monthlyBudget ?? 0) * pct
   >
     <template v-if="ai">
       <section>
-        <h2 class="text-label text-ink">AI 추천 예산</h2>
-
-        <div class="mt-3 glass rounded-2xl p-4">
+        <div class="glass rounded-2xl p-4">
           <div class="glass rounded-xl p-4">
             <p class="text-body-sm text-muted">추천 자립 자금 총액</p>
             <p class="tabular mt-1 text-h1 text-ink">{{ won(ai.recommendedTotal) }}</p>
