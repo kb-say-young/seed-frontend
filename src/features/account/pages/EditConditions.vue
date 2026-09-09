@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ChevronLeft, TriangleAlert } from 'lucide-vue-next'
+import { ChevronLeft } from 'lucide-vue-next'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { won } from '@/shared/lib/money'
 import { me, loadMe, ymdDotted } from '@/shared/lib/me'
@@ -94,14 +94,6 @@ const hint = computed(() => {
           <span class="shrink-0 text-body-sm font-bold text-primary-dark">수정 ›</span>
         </button>
       </template>
-
-      <div class="flex items-start gap-2 rounded-2xl bg-amber-tint p-4">
-        <TriangleAlert :size="16" class="mt-0.5 shrink-0 text-amber" aria-hidden="true" />
-        <p class="text-caption leading-snug text-amber">
-          조건을 바꾸면 로드맵이 새로 생성돼요. 이미 완료한 체크리스트와 기록한 지출은 그대로 유지되고,
-          미완료 절차와 정책 매칭만 최신 조건으로 다시 짜여요.
-        </p>
-      </div>
     </main>
 
     <div
