@@ -72,10 +72,9 @@ async function logout() {
         <div
           v-for="t in upcoming"
           :key="t"
-          class="flex items-center justify-between border-b border-border py-4 text-body-sm text-muted"
+          class="flex items-center justify-between border-b border-border py-4 text-body-sm text-ink"
         >
           {{ t }}
-          <span class="rounded-full bg-surface-subtle px-2 py-0.5 text-caption">준비 중</span>
         </div>
 
         <button
