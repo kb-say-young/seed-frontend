@@ -6,12 +6,13 @@ import { ProgressMeter, BarChart } from '@/shared/ui/charts'
 import { expenseApi } from '@/shared/api'
 import type { BudgetCategory } from '@/shared/api/expense'
 import type { FundCategoryKey } from '@/shared/api/fund'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 
 // Figma "기록 · 예산 대비 지출 기록" 변형. 기본 기록(/tracking)과 토글로 전환.
-const { data: budget, loading, error, reload } = useResource(() => expenseApi.getBudgets(), {
-  requireAuth: true,
-})
+const { data: budget, loading, error, errorCode, reload } = useResource(
+  () => expenseApi.getBudgets(),
+  { requireAuth: true },
+)
 
 const CAT_STYLE: Record<FundCategoryKey, { dot: string; color: string }> = {
   housing: { dot: 'bg-cat-housing', color: 'var(--color-cat-housing)' },
@@ -56,6 +57,7 @@ const planRoom = computed(() => (budget.value ? budget.value.plan - budget.value
     :loading="loading"
     :show-error="!!error || !budget"
     :error-message="error ?? '예산 정보를 불러오지 못했어요.'"
+    :auth-required="errorCode === AUTH_REQUIRED_ERROR_CODE"
     @reload="reload"
   >
     <template v-if="budget">

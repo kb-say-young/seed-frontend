@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { Bell, Check } from 'lucide-vue-next'
 import SustainMeter from '@/shared/components/SustainMeter.vue'
 import MilestoneCard from '@/shared/components/MilestoneCard.vue'
@@ -8,13 +9,17 @@ import UiButton from '@/shared/ui/UiButton.vue'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import { homeApi } from '@/shared/api'
 import { me, loadMe } from '@/shared/lib/me'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 import { won } from '@/shared/lib/money'
+
+const router = useRouter()
 
 onMounted(() => {
   void loadMe()
 })
-const { data: home, loading, error, reload } = useResource(homeApi.getHome, { requireAuth: true })
+const { data: home, loading, error, errorCode, reload } = useResource(homeApi.getHome, {
+  requireAuth: true,
+})
 
 // 인사말은 앱 전역 me 를 우선 사용(즉시 표시), 없으면 홈 응답으로 보완
 const greetingName = computed(
@@ -39,7 +44,13 @@ const greetingName = computed(
 
       <div v-else-if="error" class="py-16 text-center">
         <p class="text-body-sm text-muted">{{ error }}</p>
-        <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
+        <UiButton
+          v-if="errorCode === AUTH_REQUIRED_ERROR_CODE"
+          class="mt-3"
+          @click="router.push('/login')"
+          >로그인하러 가기</UiButton
+        >
+        <UiButton v-else variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
       </div>
 
       <template v-else-if="home">

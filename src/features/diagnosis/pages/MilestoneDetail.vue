@@ -1,22 +1,23 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Check } from 'lucide-vue-next'
 import AppHeader from '@/shared/components/AppHeader.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { ProgressMeter } from '@/shared/ui/charts'
 import { diagnosisApi, roadmapApi, ApiError } from '@/shared/api'
 import type { ChecklistItem } from '@/shared/api/diagnosis'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 import { won } from '@/shared/lib/money'
 
 // Figma C1 체크 리스트. 백엔드 계약: GET /api/diagnoses/recommendations/{recommendationId}
 // (기존 GET /api/users/me/roadmap/milestones/{id} 는 백엔드에 없음 — 실존 엔드포인트로 전환)
 // 라우트의 :id 는 recommendationId 다.
 const route = useRoute()
+const router = useRouter()
 const recommendationId = computed(() => Number(route.params.id))
 
-const { data: m, loading, error, reload } = useResource(
+const { data: m, loading, error, errorCode, reload } = useResource(
   () => diagnosisApi.getRecommendationDetail(recommendationId.value),
   { requireAuth: true },
 )
@@ -92,7 +93,13 @@ const amount = (v: number | null) => (v && v > 0 ? won(v) : '0원 (비용 없음
 
       <div v-else-if="error || !m" class="py-16 text-center">
         <p class="text-body-sm text-muted">{{ error ?? '목표를 찾을 수 없어요.' }}</p>
-        <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
+        <UiButton
+          v-if="errorCode === AUTH_REQUIRED_ERROR_CODE"
+          class="mt-3"
+          @click="router.push('/login')"
+          >로그인하러 가기</UiButton
+        >
+        <UiButton v-else variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
       </div>
 
       <template v-else>

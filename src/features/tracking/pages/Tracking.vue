@@ -5,13 +5,14 @@ import UiButton from '@/shared/ui/UiButton.vue'
 import ViewTogglePage from '@/shared/components/ViewTogglePage.vue'
 import { ProgressMeter, SegmentBar } from '@/shared/ui/charts'
 import { expenseApi } from '@/shared/api'
-import { useResource } from '@/shared/lib/useResource'
+import { useResource, AUTH_REQUIRED_ERROR_CODE } from '@/shared/lib/useResource'
 import { won } from '@/shared/lib/money'
 
 const router = useRouter()
-const { data: t, loading, error, reload } = useResource(() => expenseApi.getTrackingSummary(), {
-  requireAuth: true,
-})
+const { data: t, loading, error, errorCode, reload } = useResource(
+  () => expenseApi.getTrackingSummary(),
+  { requireAuth: true },
+)
 
 const planRoom = computed(() => (t.value ? t.value.plan - t.value.spent : 0))
 // "MM.DD"
@@ -30,6 +31,7 @@ const mmdd = (iso: string) => iso.slice(5).replace('-', '.')
     :loading="loading"
     :show-error="!!error || !t"
     :error-message="error ?? '기록을 불러오지 못했어요.'"
+    :auth-required="errorCode === AUTH_REQUIRED_ERROR_CODE"
     @reload="reload"
   >
     <template #intro>
