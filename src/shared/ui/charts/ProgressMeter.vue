@@ -40,6 +40,7 @@ const label = computed(
         width: `${fillPct}%`,
         background: over && pct > 100 ? 'var(--color-danger)' : fillColor,
         animation: 'chart-fill-grow var(--chart-enter-dur) var(--chart-enter-ease) both',
+        transition: 'width var(--chart-enter-dur) var(--chart-enter-ease)',
       }"
     />
   </div>

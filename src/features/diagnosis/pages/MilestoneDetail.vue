@@ -20,7 +20,10 @@ const { data: m, loading, error, reload } = useResource(
   () => diagnosisApi.getRecommendationDetail(recommendationId.value),
   { requireAuth: true },
 )
-watch(() => route.params.id, reload)
+watch(() => route.params.id, () => {
+  overrides.value = new Map()
+  reload()
+})
 
 // 백엔드 status 는 하위 체크리스트에서 파생된다 (done | review | progress).
 const STATUS_LABEL: Record<string, string> = {
@@ -29,14 +32,19 @@ const STATUS_LABEL: Record<string, string> = {
   review: '확인 필요',
 }
 
-// 체크리스트 완료 — 목록에서 바로 처리한다. 별도 화면으로 나가지 않는다.
+// 체크리스트 완료/완료 취소 — 항목마다 그 자리에서 즉시 반영(낙관적 갱신)하고 서버에는
+// 백그라운드로 동기화한다. 항목 하나하나가 독립된 값이라(배분 비율처럼 합계 100%
+// 같은 항목 간 제약이 없다) 모아뒀다 한 번에 저장할 이유가 없고, 저장 전에 화면을
+// 벗어나면 체크한 게 그대로 사라지는 위험만 생긴다.
 // useResource 의 data 는 shallowRef 라 항목 필드를 직접 바꿔도 갱신되지 않는다.
-// 방금 완료한 id 를 따로 들고 화면에 겹쳐 보여준다.
-const justDone = ref<Set<number>>(new Set())
-const pendingId = ref<number | null>(null)
-const completeError = ref('')
+// 서버 응답과 달라진 항목만 id → 완료 여부로 겹쳐 보여준다.
+const overrides = ref<Map<number, boolean>>(new Map())
+// 항목별로 이미 보낸 요청이 끝나기 전엔 같은 항목의 재클릭만 막는다 — 서로 다른 항목은
+// 동시에 토글해도 된다 (완료 처리처럼 순서를 지켜야 하는 부수효과가 없다).
+const pendingIds = ref<Set<number>>(new Set())
+const toggleError = ref('')
 
-const isDone = (c: ChecklistItem) => c.status === 'done' || justDone.value.has(c.id)
+const isDone = (c: ChecklistItem) => overrides.value.get(c.id) ?? c.status === 'done'
 
 const items = computed(() => m.value?.checklistItems ?? [])
 const doneCount = computed(() => items.value.filter(isDone).length)
@@ -44,19 +52,32 @@ const donePct = computed(() =>
   items.value.length ? Math.round((doneCount.value / items.value.length) * 100) : 0,
 )
 
-async function complete(c: ChecklistItem) {
-  if (isDone(c) || pendingId.value !== null) return
-  pendingId.value = c.id
-  completeError.value = ''
+async function toggle(c: ChecklistItem) {
+  if (pendingIds.value.has(c.id)) return
+  const next = !isDone(c)
+
+  // 낙관적 갱신 — 응답을 기다리지 않고 바로 체크 상태를 바꾼다.
+  overrides.value = new Map(overrides.value).set(c.id, next)
+  pendingIds.value = new Set(pendingIds.value).add(c.id)
+  toggleError.value = ''
+
   try {
-    await roadmapApi.completeChecklistItem(c.id)
-    justDone.value = new Set(justDone.value).add(c.id)
+    if (next) await roadmapApi.completeChecklistItem(c.id)
+    else await roadmapApi.uncompleteChecklistItem(c.id)
   } catch (e) {
-    completeError.value =
-      e instanceof ApiError ? e.message : '완료 처리에 실패했어요. 잠시 후 다시 시도해 주세요.'
-    console.warn('[checklist-complete]', e)
+    // 실패하면 되돌린다 — 눌러둔 상태가 서버에 반영됐다고 착각하게 두지 않는다.
+    overrides.value = new Map(overrides.value).set(c.id, !next)
+    toggleError.value =
+      e instanceof ApiError
+        ? e.message
+        : next
+          ? '완료 처리에 실패했어요. 잠시 후 다시 시도해 주세요.'
+          : '완료 취소에 실패했어요. 잠시 후 다시 시도해 주세요.'
+    console.warn('[checklist-toggle]', e)
   } finally {
-    pendingId.value = null
+    const remaining = new Set(pendingIds.value)
+    remaining.delete(c.id)
+    pendingIds.value = remaining
   }
 }
 
@@ -120,49 +141,44 @@ const amount = (v: number | null) => (v && v > 0 ? won(v) : '0원 (비용 없음
 
           <ul class="mt-2 space-y-2.5">
             <li v-for="c in items" :key="c.id">
-              <!-- 미완료: 누르면 그 자리에서 완료 처리한다. -->
+              <!-- 완료·미완료 토글. 완료된 항목도 다시 눌러 취소할 수 있다. -->
               <button
-                v-if="!isDone(c)"
                 type="button"
                 class="glass tap-target block w-full rounded-2xl p-3.5 text-left disabled:opacity-50"
-                :disabled="pendingId !== null"
-                :aria-label="`${c.contents} 완료 처리하기`"
-                @click="complete(c)"
+                :disabled="pendingIds.has(c.id)"
+                :aria-pressed="isDone(c)"
+                :aria-label="`${c.contents} ${isDone(c) ? '완료 취소하기' : '완료 처리하기'}`"
+                @click="toggle(c)"
               >
                 <span class="flex items-center gap-2.5">
                   <span
-                    class="size-[18px] shrink-0 rounded-[5px] border-[1.5px] border-border-strong"
-                    aria-hidden="true"
-                  />
-                  <span class="min-w-0 flex-1 text-body-sm text-ink">{{ c.contents }}</span>
-                  <span v-if="pendingId === c.id" class="text-caption text-muted">처리 중…</span>
-                </span>
-                <span class="mt-1 block text-caption text-muted">
-                  예상 금액: {{ amount(c.estimatedAmount) }}
-                </span>
-              </button>
-
-              <!-- 완료: 되돌리는 API 가 없어 다시 누를 수 없다. -->
-              <div v-else class="glass rounded-2xl p-3.5">
-                <p class="flex items-center gap-2.5">
-                  <span
+                    v-if="isDone(c)"
                     class="flex size-[18px] shrink-0 items-center justify-center rounded-[5px] bg-primary text-on-primary"
                     aria-hidden="true"
                   >
                     <Check :size="13" :stroke-width="3" />
                   </span>
-                  <span class="min-w-0 flex-1 text-body-sm text-muted">{{ c.contents }}</span>
-                  <span class="sr-only">완료됨</span>
-                </p>
-                <p class="mt-1 text-caption text-muted">
+                  <span
+                    v-else
+                    class="size-[18px] shrink-0 rounded-[5px] border-[1.5px] border-border-strong"
+                    aria-hidden="true"
+                  />
+                  <span
+                    class="min-w-0 flex-1 text-body-sm"
+                    :class="isDone(c) ? 'text-muted' : 'text-ink'"
+                    >{{ c.contents }}</span
+                  >
+                  <span v-if="isDone(c)" class="sr-only">완료됨</span>
+                </span>
+                <span class="mt-1 block text-caption text-muted">
                   예상 금액: {{ amount(c.estimatedAmount) }}
-                </p>
-              </div>
+                </span>
+              </button>
             </li>
           </ul>
 
-          <p v-if="completeError" role="alert" class="mt-2 text-body-sm text-danger">
-            {{ completeError }}
+          <p v-if="toggleError" role="alert" class="mt-2 text-body-sm text-danger">
+            {{ toggleError }}
           </p>
         </section>
 
