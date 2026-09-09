@@ -143,7 +143,7 @@ const hint = computed(() => {
       class="glass-strong sticky bottom-0 border-x-0 border-b-0 px-6 pb-7 pt-3"
       style="padding-bottom: max(1.75rem, env(safe-area-inset-bottom))"
     >
-      <UiButton size="lg" block @click="router.push('/intake')">로드맵 다시 만들기</UiButton>
+      <UiButton size="lg" block @click="router.push('/intake')">진단 다시하기</UiButton>
     </div>
   </div>
 </template>
