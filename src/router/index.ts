@@ -36,7 +36,6 @@ export const router = createRouter({
     { path: '/roadmap', name: 'roadmap', component: () => import('@/features/diagnosis/pages/Roadmap.vue') },
     { path: '/roadmap/:id', name: 'milestone', component: () => import('@/features/diagnosis/pages/MilestoneDetail.vue') },
     { path: '/roadmap/:id/policy', name: 'policy-detail', component: () => import('@/features/diagnosis/pages/PolicyDetail.vue') },
-    { path: '/roadmap/:id/cost', name: 'cost-record', component: () => import('@/features/diagnosis/pages/CostRecord.vue') },
 
     // plan — 자금 계획
     { path: '/fund', name: 'fund', component: () => import('@/features/plan/pages/FundPlan.vue') },

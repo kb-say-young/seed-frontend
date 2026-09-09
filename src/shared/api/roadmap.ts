@@ -74,19 +74,9 @@ export function getRoadmap(): Promise<RoadmapResponse> {
   return http.get<RoadmapResponse>('/api/users/me/roadmap')
 }
 
-/** 마일스톤 단건 상세. */
-export function getMilestone(milestoneId: string): Promise<Milestone> {
-  return http.get<Milestone>(`/api/users/me/roadmap/milestones/${milestoneId}`)
-}
-
 /** 마일스톤에 연결된 정책 상세. */
 export function getMilestonePolicy(milestoneId: string): Promise<PolicyDetail> {
   return http.get<PolicyDetail>(`/api/users/me/roadmap/milestones/${milestoneId}/policy`)
-}
-
-/** 정책 상세 (정책 id 로 직접). */
-export function getPolicy(policyId: string): Promise<PolicyDetail> {
-  return http.get<PolicyDetail>(`/api/policies/${policyId}`)
 }
 
 /** 체크리스트 항목 완료 처리(+ 선택적으로 비용 기록). */
