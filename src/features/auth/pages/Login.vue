@@ -29,7 +29,7 @@ async function submit() {
     state.loginId = loginId.value.trim()
     resetMe()
     void loadMe(true)
-    router.push('/roadmap')
+    router.push('/home')
   } catch (e) {
     error.value =
       e instanceof ApiError
