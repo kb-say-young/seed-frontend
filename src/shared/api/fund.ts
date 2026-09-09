@@ -18,10 +18,12 @@ export interface FundPrinciple {
   ok: boolean
 }
 
+// 금액 구조는 로드맵 요약(MyRoadmapResponse.summary)과 같은 개념을 쓴다.
+// 전체 예상 비용 · 확보액 두 값만 받고, 부족분은 화면에서 뺄셈으로 구한다
+// (두 곳에서 따로 계산해 서로 어긋나는 걸 막는다).
 export interface FundPlanResponse {
-  totalFund: number // 계획할 자립 자금 총액(원)
-  settlementMoney: number // 자립정착금(원)
-  supportMoney: number // 지원금(원)
+  totalFund: number // 전체 예상 비용(원) — 로드맵 추천들의 목표 금액 합
+  securedAmount: number // 현재 확보액(원) — 디딤씨앗통장 잔액 등
   buckets: FundBucket[]
   principles: FundPrinciple[]
 }
