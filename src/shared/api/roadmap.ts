@@ -94,3 +94,8 @@ export function completeChecklistItem(
 ): Promise<void> {
   return http.post<void>(`/api/users/me/roadmap/checklist-items/${itemId}/complete`, body)
 }
+
+/** 완료 취소 — 잘못 눌렀거나 마음이 바뀐 경우. 비용/일자는 애초에 저장하지 않아 되돌릴 게 없다. */
+export function uncompleteChecklistItem(itemId: number): Promise<void> {
+  return http.delete<void>(`/api/users/me/roadmap/checklist-items/${itemId}/complete`)
+}
