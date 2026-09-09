@@ -27,7 +27,7 @@ const subtitle = computed(() => {
 const menu = [
   { t: '입력한 조건 수정', to: '/me/edit' },
   { t: '목표 수정', to: '/me/edit' },
-  { t: '로드맵 다시 만들기', to: '/roadmap' },
+  { t: '로드맵 다시 만들기', to: '/intake' },
 ]
 // 화면 준비 중 (이동 안 함)
 const upcoming = ['알림 설정', '자주 묻는 질문']
