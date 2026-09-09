@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { TriangleAlert } from 'lucide-vue-next'
-import AppHeader from '@/shared/components/AppHeader.vue'
+import { ChevronLeft, TriangleAlert } from 'lucide-vue-next'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { won } from '@/shared/lib/money'
 import { me, loadMe, ymdDotted } from '@/shared/lib/me'
@@ -59,8 +58,18 @@ const hint = computed(() => {
 
 <template>
   <div class="flex min-h-svh flex-col bg-transparent">
-    <AppHeader title="조건 수정" to="/me" />
-    <main id="main" class="flex-1 space-y-2.5 px-5 pt-2">
+    <header class="flex items-center gap-2 px-6 pt-14">
+      <button
+        type="button"
+        class="tap-target -ml-2 flex items-center justify-center rounded-full text-ink"
+        aria-label="이전 화면"
+        @click="router.push('/me')"
+      >
+        <ChevronLeft :size="24" aria-hidden="true" />
+      </button>
+      <h1 class="text-h2 text-ink">조건 수정</h1>
+    </header>
+    <main id="main" class="mt-8 flex-1 space-y-2.5 px-6">
       <p class="text-body-sm text-muted">바뀐 조건을 수정하고 로드맵을 다시 만들 수 있어요.</p>
 
       <p v-if="me.loading" class="py-6 text-center text-body-sm text-muted">불러오는 중…</p>
@@ -96,7 +105,7 @@ const hint = computed(() => {
     </main>
 
     <div
-      class="glass-strong sticky bottom-0 border-x-0 border-b-0 px-5 pb-7 pt-3"
+      class="glass-strong sticky bottom-0 border-x-0 border-b-0 px-6 pb-7 pt-3"
       style="padding-bottom: max(1.75rem, env(safe-area-inset-bottom))"
     >
       <UiButton size="lg" block @click="router.push('/diagnosing')">로드맵 다시 만들기</UiButton>
