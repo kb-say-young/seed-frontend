@@ -27,3 +27,8 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Docker (루트 seed/docker-compose.yml 용 로컬 통합 스택 — 프론트 레포엔 커밋 안 함)
+.dockerignore
+Dockerfile
+docker/
