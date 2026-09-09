@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Check } from 'lucide-vue-next'
-import AppHeader from '@/shared/components/AppHeader.vue'
+import { Check, ChevronLeft } from 'lucide-vue-next'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { ProgressMeter } from '@/shared/ui/charts'
 import { diagnosisApi, roadmapApi, ApiError } from '@/shared/api'
@@ -86,9 +85,19 @@ const amount = (v: number | null) => (v && v > 0 ? won(v) : '0원 (비용 없음
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <AppHeader title="체크 리스트" to="/roadmap" />
-    <main id="main" class="space-y-4 px-5 pb-10 pt-2">
+  <div class="flex min-h-svh flex-col bg-transparent">
+    <header class="flex items-center gap-2 px-6 pt-14">
+      <button
+        type="button"
+        class="tap-target -ml-2 flex items-center justify-center rounded-full text-ink"
+        aria-label="이전 화면"
+        @click="router.push('/roadmap')"
+      >
+        <ChevronLeft :size="24" aria-hidden="true" />
+      </button>
+      <h1 class="text-h2 text-ink">체크 리스트</h1>
+    </header>
+    <main id="main" class="mt-8 flex-1 space-y-4 px-6 pb-10">
       <p v-if="loading" class="py-16 text-center text-body-sm text-muted">불러오는 중…</p>
 
       <div v-else-if="error || !m" class="py-16 text-center">
@@ -141,10 +150,7 @@ const amount = (v: number | null) => (v && v > 0 ? won(v) : '0원 (비용 없음
         </section>
 
         <section v-if="items.length">
-          <div class="flex items-baseline justify-between">
-            <h2 class="text-label text-ink">할 일</h2>
-            <span class="text-caption text-muted">{{ doneCount }} / {{ items.length }} 완료</span>
-          </div>
+          <h2 class="text-label text-ink">할 일</h2>
 
           <ul class="mt-2 space-y-2.5">
             <li v-for="c in items" :key="c.id">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Share2, ChevronRight } from 'lucide-vue-next'
+import { ChevronRight } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import MilestoneSlideCard from '@/features/diagnosis/components/MilestoneSlideCard.vue'
@@ -128,17 +128,8 @@ function onTouchEnd(e: TouchEvent) {
 
 <template>
   <div class="relative min-h-svh bg-transparent px-6 pb-32 pt-14">
-    <header class="flex items-start justify-between gap-3">
-      <div>
-        <h1 class="text-h2 text-ink">내 진단결과</h1>
-      </div>
-      <button
-        type="button"
-        class="tap-target -mr-2 flex items-center justify-center rounded-full text-muted"
-        aria-label="진단결과 공유"
-      >
-        <Share2 :size="20" aria-hidden="true" />
-      </button>
+    <header>
+      <h1 class="text-h2 text-ink">내 진단결과</h1>
     </header>
 
     <main id="main" class="mt-8 space-y-4">

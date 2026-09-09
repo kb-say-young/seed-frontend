@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell, Check } from 'lucide-vue-next'
+import { Check } from 'lucide-vue-next'
 import SustainMeter from '@/shared/components/SustainMeter.vue'
 import MilestoneCard from '@/shared/components/MilestoneCard.vue'
 import StatCard from '@/shared/ui/StatCard.vue'
@@ -29,14 +29,9 @@ const greetingName = computed(
 
 <template>
   <div class="min-h-svh bg-transparent px-6 pb-32 pt-14">
-    <header class="flex items-start justify-between gap-3">
-      <div>
-        <h1 class="text-h2 text-ink">안녕하세요, {{ greetingName }}님</h1>
-        <p v-if="home" class="mt-2 text-body-sm text-muted">{{ home.headline }}</p>
-      </div>
-      <button type="button" class="tap-target -mr-2 flex items-center justify-center rounded-full text-muted" aria-label="알림">
-        <Bell :size="22" aria-hidden="true" />
-      </button>
+    <header>
+      <h1 class="text-h2 text-ink">안녕하세요, {{ greetingName }}님</h1>
+      <p v-if="home" class="mt-2 text-body-sm text-muted">{{ home.headline }}</p>
     </header>
 
     <main id="main" class="mt-8 space-y-4">
