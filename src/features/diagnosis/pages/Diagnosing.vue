@@ -6,6 +6,7 @@ import type { AnimationItem } from 'lottie-web'
 import UiButton from '@/shared/ui/UiButton.vue'
 import { userApi, roadmapApi, ApiError } from '@/shared/api'
 import { isLoggedIn } from '@/shared/lib/auth'
+import { setDiagnosisId } from '@/shared/lib/diagnosis'
 import { buildIntakePayload, IntakeIncompleteError } from '@/features/diagnosis/model/intake'
 import plantLoader from '@/features/diagnosis/plant-loader.json'
 
@@ -44,6 +45,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 let slowTimer: ReturnType<typeof setTimeout> | undefined
 let cancelled = false
+// 이번 화면에서 intake 제출로 받은 진단 id. 재시도 시 중복 제출을 막는 데 쓴다.
+let submittedId: number | null = null
+// 진단이 failed 로 끝났는가 — 재시도 시 새 진단을 만들지, 조회만 다시 할지 가른다.
+let failedDiagnosis = false
 
 function armSlowTimer() {
   if (slowTimer) clearTimeout(slowTimer)
@@ -75,18 +80,28 @@ async function run() {
   try {
     // 비로그인(둘러보기)은 제출 대상이 없다 — 최소 노출 후 결과(목/폴백) 화면으로.
     if (isLoggedIn()) {
-      phase.value = 'submitting'
-      const submitted = await userApi.submitIntake(buildIntakePayload())
+      // 이미 제출이 끝난 뒤(로드맵 대기 중) 실패해 재시도한 경우, intake 를 다시 보내면
+      // 진단과 Dify 호출이 한 번 더 생긴다. 이번 시도에서 받은 id 가 있으면 조회만 재시도한다.
+      if (submittedId == null) {
+        phase.value = 'submitting'
+        const result = await userApi.submitIntake(buildIntakePayload())
+        submittedId = result.diagnosisId
+        setDiagnosisId(result.diagnosisId)
 
-      // 백엔드가 이미 생성 실패를 확정한 경우 — 재시도 대기 없이 바로 안내.
-      if (submitted.status === 'failed') {
-        errorMsg.value = 'AI 진단을 만드는 데 실패했어요. 다시 시도해 주세요.'
-        phase.value = 'error'
-        return
+        // 서버가 Dify 호출까지 끝낸 뒤 응답하므로, 여기서 failed 면 기다려도 결과가 안 생긴다.
+        if (result.status === 'failed') {
+          throw new ApiError(
+            'DIAGNOSIS_FAILED',
+            '진단 결과를 만들지 못했어요. 잠시 후 다시 시도해 주세요.',
+            200,
+          )
+        }
       }
 
       phase.value = 'generating'
-      await waitForRoadmap()
+      const roadmap = await waitForRoadmap()
+      // 로드맵 응답이 기준 진단을 알려주면 그쪽을 최종값으로 삼는다.
+      if (roadmap?.diagnosisId != null) setDiagnosisId(roadmap.diagnosisId)
     }
 
     const elapsed = Date.now() - startedAt
@@ -99,6 +114,7 @@ async function run() {
       router.replace('/intake')
       return
     }
+    failedDiagnosis = e instanceof ApiError && e.code === 'DIAGNOSIS_FAILED'
     errorMsg.value = e instanceof ApiError ? e.message : '진단 결과를 만드는 중 문제가 생겼어요.'
     phase.value = 'error'
     console.warn('[diagnosing]', e)
@@ -109,7 +125,13 @@ async function run() {
 
 function retry() {
   errorMsg.value = ''
-  phase.value = 'submitting'
+  // 진단 자체가 실패로 끝났으면 새 진단을 다시 만들어야 한다.
+  if (failedDiagnosis) {
+    submittedId = null
+    failedDiagnosis = false
+    setDiagnosisId(null)
+  }
+  phase.value = submittedId == null ? 'submitting' : 'generating'
   void run()
 }
 

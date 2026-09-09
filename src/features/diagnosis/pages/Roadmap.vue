@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Share2, ChevronRight } from 'lucide-vue-next'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import MilestoneSlideCard from '@/features/diagnosis/components/MilestoneSlideCard.vue'
-import { roadmapApi } from '@/shared/api'
+import { roadmapApi, diagnosisApi, ApiError } from '@/shared/api'
 import type { MilestoneBucket, MilestoneCategory } from '@/shared/api/roadmap'
+import type { Recommendation, RecommendationCategory } from '@/shared/api/diagnosis'
+import { setDiagnosisId } from '@/shared/lib/diagnosis'
 import { useResource } from '@/shared/lib/useResource'
 import { manwon } from '@/shared/lib/money'
 
@@ -39,6 +41,47 @@ const items = computed(() => {
   )
 })
 
+// 백엔드 로드맵 응답에는 아직 milestones 가 없고 기준 diagnosisId 만 온다.
+// 그 id 로 추천(로드맵) 목록을 불러 카드로 보여준다. milestones 가 생기면 그쪽이 우선.
+const hasMilestones = computed(() => (roadmap.value?.milestones?.length ?? 0) > 0)
+
+const CATEGORY_PARAM: Record<MilestoneCategory, RecommendationCategory> = {
+  housing: 'HOUSING',
+  living: 'LIVING',
+  work: 'JOB_STARTUP',
+  finance: 'FINANCE',
+}
+
+const recos = ref<Recommendation[]>([])
+const recosLoading = ref(false)
+const recosError = ref<string | null>(null)
+
+async function loadRecommendations() {
+  const id = roadmap.value?.diagnosisId
+  if (id == null || hasMilestones.value) {
+    recos.value = []
+    return
+  }
+  setDiagnosisId(id)
+
+  recosLoading.value = true
+  recosError.value = null
+  try {
+    recos.value = await diagnosisApi.getRecommendations(
+      id,
+      tab.value === 'all' ? undefined : CATEGORY_PARAM[tab.value],
+    )
+  } catch (e) {
+    recos.value = []
+    recosError.value = e instanceof ApiError ? e.message : '진단 결과를 불러오지 못했어요.'
+  } finally {
+    recosLoading.value = false
+  }
+}
+
+// 진단이 바뀌거나(최초 로드 포함) 카테고리 탭을 옮기면 다시 불러온다.
+watch(() => [roadmap.value?.diagnosisId, tab.value], loadRecommendations, { immediate: true })
+
 const securedPct = computed(() => {
   const s = roadmap.value?.summary
   if (!s || !s.totalCost) return 0
@@ -66,13 +109,10 @@ function onTouchEnd(e: TouchEvent) {
 </script>
 
 <template>
-  <div class="relative bg-transparent">
-    <header
-      class="glass-strong z-10 flex items-start justify-between border-x-0 border-t-0 px-5 pb-3 pt-3"
-      style="padding-top: max(0.75rem, env(safe-area-inset-top))"
-    >
+  <div class="relative min-h-svh bg-transparent px-6 pb-32 pt-14">
+    <header class="flex items-start justify-between gap-3">
       <div>
-        <h1 class="text-h3 text-ink">내 진단결과</h1>
+        <h1 class="text-h2 text-ink">내 진단결과</h1>
       </div>
       <button
         type="button"
@@ -83,7 +123,7 @@ function onTouchEnd(e: TouchEvent) {
       </button>
     </header>
 
-    <main id="main" class="space-y-4 px-5 pb-32 pt-3">
+    <main id="main" class="mt-8 space-y-4">
       <p v-if="loading" class="py-16 text-center text-body-sm text-muted">불러오는 중…</p>
 
       <div v-else-if="error" class="py-16 text-center">
@@ -129,7 +169,7 @@ function onTouchEnd(e: TouchEvent) {
         </RouterLink>
 
         <!-- 카테고리 필터 -->
-        <div class="-mx-5 overflow-x-auto px-5">
+        <div class="-mx-6 overflow-x-auto px-6">
           <div class="flex gap-2" role="tablist" aria-label="영역 필터">
             <button
               v-for="t in TABS"
@@ -146,8 +186,8 @@ function onTouchEnd(e: TouchEvent) {
           </div>
         </div>
 
-        <!-- 구간 슬라이드 선택 -->
-        <div class="-mx-5 overflow-x-auto px-5">
+        <!-- 구간 슬라이드 선택 — 추천 목록에는 시점 구간 정보가 없어 milestones 가 있을 때만 -->
+        <div v-if="hasMilestones" class="-mx-6 overflow-x-auto px-6">
           <div class="flex gap-2" role="tablist" aria-label="시점 구간">
             <button
               v-for="(label, i) in SLIDE_LABELS"
@@ -169,9 +209,17 @@ function onTouchEnd(e: TouchEvent) {
           @touchstart.passive="onTouchStart"
           @touchend.passive="onTouchEnd"
         >
-          <p class="text-caption font-bold tracking-wide text-muted">{{ BUCKET_LABELS[slide] }}</p>
+          <p v-if="hasMilestones" class="text-caption font-bold tracking-wide text-muted">
+            {{ BUCKET_LABELS[slide] }}
+          </p>
+
           <!-- :key 리마운트 + CSS 애니메이션. Vue <Transition> 미사용(숨은 탭에서 rAF 스로틀 시 스턱 방지). -->
-          <div :key="slide" class="mt-3 space-y-2.5" :class="`slide-in-${slideDir}`">
+          <div
+            v-if="hasMilestones"
+            :key="slide"
+            class="mt-3 space-y-2.5"
+            :class="`slide-in-${slideDir}`"
+          >
             <MilestoneSlideCard
               v-for="m in items"
               :key="m.id"
@@ -186,8 +234,33 @@ function onTouchEnd(e: TouchEvent) {
             </p>
           </div>
 
+          <!-- milestones 가 오기 전까지는 진단 추천 목록을 그대로 보여준다. -->
+          <div v-else class="mt-3 space-y-2.5">
+            <p v-if="recosLoading" class="py-10 text-center text-body-sm text-muted">
+              진단 결과를 불러오는 중…
+            </p>
+            <div v-else-if="recosError" class="glass rounded-2xl p-4">
+              <p class="text-body-sm text-muted">{{ recosError }}</p>
+              <UiButton variant="secondary" class="mt-3" @click="reload">다시 시도</UiButton>
+            </div>
+            <template v-else>
+              <MilestoneSlideCard
+                v-for="r in recos"
+                :key="r.recommendationId"
+                :to="`/roadmap/${r.recommendationId}`"
+                :title="r.title"
+                :status="r.status"
+                :tasks-done="0"
+                :tasks-total="0"
+              />
+              <p v-if="recos.length === 0" class="glass rounded-2xl p-4 text-body-sm text-muted">
+                이 영역에 해당하는 목표가 없어요.
+              </p>
+            </template>
+          </div>
+
           <!-- 슬라이드 위치 표시 -->
-          <div class="mt-4 flex items-center justify-center gap-2" aria-hidden="true">
+          <div v-if="hasMilestones" class="mt-4 flex items-center justify-center gap-2" aria-hidden="true">
             <span
               v-for="i in 4"
               :key="i"
@@ -195,9 +268,11 @@ function onTouchEnd(e: TouchEvent) {
               :class="slide === i - 1 ? 'w-5 bg-primary-bright' : 'w-1.5 bg-border-strong'"
             />
           </div>
-          <p class="sr-only" role="status">전체 4개 구간 중 {{ slide + 1 }}번째</p>
+          <p v-if="hasMilestones" class="sr-only" role="status">
+            전체 4개 구간 중 {{ slide + 1 }}번째
+          </p>
 
-          <div class="mt-3 flex justify-between">
+          <div v-if="hasMilestones" class="mt-3 flex justify-between">
             <button
               type="button"
               class="tap-target rounded-full px-4 text-body-sm font-semibold text-primary-dark disabled:opacity-30"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { CircleCheck, CircleAlert, ChevronRight } from 'lucide-vue-next'
-import AppHeader from '@/shared/components/AppHeader.vue'
 import UiButton from '@/shared/ui/UiButton.vue'
 import FloatingNav from '@/shared/components/FloatingNav.vue'
 import ViewToggle from '@/shared/ui/ViewToggle.vue'
@@ -15,6 +15,11 @@ const { data: plan, loading, error, reload } = useResource(() => fundApi.getFund
   requireAuth: true,
 })
 
+// 부족분은 백엔드가 따로 주지 않는다 — 전체 비용에서 확보액을 뺀다.
+const shortfall = computed(() =>
+  Math.max(0, (plan.value?.totalFund ?? 0) - (plan.value?.securedAmount ?? 0)),
+)
+
 const CAT_STYLE: Record<FundCategoryKey, { cls: string; color: string }> = {
   housing: { cls: 'bg-cat-housing', color: 'var(--color-cat-housing)' },
   living: { cls: 'bg-cat-living', color: 'var(--color-cat-living)' },
@@ -24,9 +29,9 @@ const CAT_STYLE: Record<FundCategoryKey, { cls: string; color: string }> = {
 </script>
 
 <template>
-  <div class="min-h-svh bg-transparent">
-    <AppHeader title="자금 계획" to="/roadmap" />
-    <main id="main" class="space-y-4 px-5 pb-32 pt-2">
+  <div class="min-h-svh bg-transparent px-6 pb-32 pt-14">
+    <h1 class="text-h2 text-ink">자금 계획</h1>
+    <main id="main" class="mt-8 space-y-4">
       <ViewToggle
         :options="[
           { label: 'AI 추천', to: '/fund/ai' },
@@ -44,11 +49,10 @@ const CAT_STYLE: Record<FundCategoryKey, { cls: string; color: string }> = {
 
       <template v-else>
         <section class="glass rounded-2xl p-5">
-          <p class="text-body-sm text-muted">계획할 자립 자금</p>
+          <p class="text-body-sm text-muted">전체 예상 비용</p>
           <p class="tabular mt-1 text-h1 text-ink">{{ won(plan.totalFund) }}</p>
           <p class="mt-1 text-caption text-muted">
-            자립정착금 {{ plan.settlementMoney.toLocaleString('ko-KR') }} + 지원금
-            {{ plan.supportMoney.toLocaleString('ko-KR') }}
+            현재 확보 {{ won(plan.securedAmount) }} · 앞으로 {{ won(shortfall) }} 더 필요해요
           </p>
         </section>
 

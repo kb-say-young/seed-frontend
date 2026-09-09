@@ -51,13 +51,18 @@ export interface IntakePayload {
   goals: GoalPayload[]
 }
 
-export interface SubmitIntakeResponse {
+// intake 제출 응답 — 백엔드 `DiagnosisStatusResponse`.
+// 서버가 프로필/목표 저장 후 AI 진단까지 동기로 끝내고, 방금 만든 진단의 id 와 상태를 돌려준다.
+// 이 diagnosisId 로 `GET /api/diagnoses/{id}/recommendations` 를 조회한다.
+export type DiagnosisRunStatus = 'running' | 'completed' | 'failed'
+
+export interface IntakeResult {
   diagnosisId: number
-  status: 'running' | 'completed' | 'failed'
+  status: DiagnosisRunStatus
 }
 
-export function submitIntake(payload: IntakePayload): Promise<SubmitIntakeResponse> {
-  return http.post<SubmitIntakeResponse>('/api/users/me/intake', payload)
+export function submitIntake(payload: IntakePayload): Promise<IntakeResult> {
+  return http.post<IntakeResult>('/api/users/me/intake', payload)
 }
 
 // --- 내 프로필 조회 (GET /api/users/me) — issue #23 ---
